@@ -14,3 +14,18 @@ gen/
 
 # Local configuration file (sdk path, etc)
 local.properties
+
+# work buildfiles
+gen
+target
+
+# os files
+.DS_Store
+
+# ide files
+
+.classpath
+.settings
+.project
+
+

@@ -1,12 +1,11 @@
 package uk.ac.sussex.asegr3.prototype;
 
-import android.app.Activity;
+import com.google.android.maps.MapActivity;
+
 import android.os.Bundle;
-import android.util.Log;
 
-public class HelloAndroidActivity extends Activity {
-
-    private static String TAG = "prototype";
+public class HelloAndroidActivity extends MapActivity {
+	
     /**
      * Called when the activity is first created.
      * @param savedInstanceState If the activity is being re-initialized after 
@@ -15,10 +14,14 @@ public class HelloAndroidActivity extends Activity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-		Log.i(TAG, "onCreate");
+    	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
     }
+	@Override
+	protected boolean isRouteDisplayed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }
 

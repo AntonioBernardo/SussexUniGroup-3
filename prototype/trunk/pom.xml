@@ -8,6 +8,8 @@
     <packaging>apk</packaging>
     <name>prototype</name>
 
+break build!!!
+
     <properties>
         <platform.version>4.0.1.2</platform.version>
     </properties>

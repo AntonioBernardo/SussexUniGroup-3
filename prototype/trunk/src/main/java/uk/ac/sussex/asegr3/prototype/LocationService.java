@@ -1,7 +1,5 @@
 package uk.ac.sussex.asegr3.prototype;
 
-import java.util.List;
-
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;

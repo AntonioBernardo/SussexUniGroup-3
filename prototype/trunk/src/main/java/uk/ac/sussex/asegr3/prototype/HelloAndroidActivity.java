@@ -6,6 +6,7 @@ import com.google.android.maps.MapView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.DigitalClock;
 
 public class HelloAndroidActivity extends MapActivity {
 	
@@ -22,6 +23,8 @@ public class HelloAndroidActivity extends MapActivity {
 
         MapView mapView = (MapView) findViewById(R.id.mapview);
         mapView.setBuiltInZoomControls(true);
+        
+        DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
         
         LocationService locationService = new LocationServiceFactory().create(this);
 

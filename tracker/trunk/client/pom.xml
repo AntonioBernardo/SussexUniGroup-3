@@ -45,6 +45,9 @@
                         <platform>16</platform>
                     </sdk>
                     <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                    <jvmArguments>
+                       <argument>-Xmx512m</argument>
+                    </jvmArguments>
                 </configuration>
                 <extensions>true</extensions>
             </plugin>

@@ -13,7 +13,8 @@
 
     <properties>
         <platform.version>4.1.2_r3</platform.version>
-	<dropwizard.version>0.5.1</dropwizard.version>
+		<dropwizard.version>0.5.1</dropwizard.version>
+		<mysql-connector.version>5.1.21</mysql-connector.version>
     </properties>
 
     <dependencies>
@@ -47,7 +48,7 @@
     	<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.21</version>
+			<version>${mysql-connector.version}</version>
 		</dependency>
     	<!-- <dependency>
            <groupId>org.mortbay.jetty</groupId> used for embedded jetty integration tests
@@ -106,6 +107,43 @@
 			        </execution>
 			    </executions>
 			</plugin>
+			<plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>sql-maven-plugin</artifactId>
+        <version>1.5</version>
+
+        <dependencies>
+          <!-- specify the dependent JDBC driver here -->
+          <dependency>
+                  <groupId>mysql</groupId>
+                  <artifactId>mysql-connector-java</artifactId>
+                  <version>${mysql-connector.version}</version>
+          </dependency>
+        </dependencies>
+
+        <!-- common configuration shared by all executions -->
+        <configuration>
+          <driver>com.mysql.jdbc.Driver</driver>
+          <url>jdbc:mysql://localhost:3306</url>
+          <username>root</username>
+          <password></password>
+        </configuration>
+
+        <executions>
+          <execution>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <!-- specific configuration for this execution -->
+            <configuration>
+              <srcFiles>
+                <srcFile>${project.build.directory}/test-classes/sql/setup-db.sql</srcFile>
+              </srcFiles>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
         </plugins>
     </build>
 </project>

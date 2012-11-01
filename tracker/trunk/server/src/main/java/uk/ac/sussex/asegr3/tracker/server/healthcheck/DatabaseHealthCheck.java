@@ -14,8 +14,12 @@ public class DatabaseHealthCheck extends HealthCheck{
 
 	@Override
 	protected Result check() throws Exception {
-		// TODO once database has been setup
-		return null;
+		try {
+			database.ping();
+			return Result.healthy();
+		} catch (Throwable t){
+			return Result.unhealthy(t);
+		}
 	}
 
 }

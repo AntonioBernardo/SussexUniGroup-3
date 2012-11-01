@@ -1,11 +1,11 @@
 package uk.ac.sussex.asegr3.tracker.server;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 import org.eclipse.jetty.server.Server;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.yammer.metrics.core.HealthCheck;
+import com.yammer.metrics.core.HealthCheck.Result;
 
 import static uk.ac.sussex.asegr3.tracker.server.IntegrationTestingUtils.startEmbeddedJetty;
 import static org.junit.Assert.assertThat;
@@ -17,31 +17,28 @@ import static org.hamcrest.CoreMatchers.equalTo;
  * @author andrewhaines
  *
  */
-public class TrackerServiceIntegrationTest implements ServletContextListener {
+public class TrackerServiceIntegrationTest {
 
-	private TrackerService candidate;
-	private Server server;
-	private boolean startedUp = false;
+	private static TrackerService candidate;
+	private static Server server;
 	
-	@Before
-	public void before() throws Exception{
+	@BeforeClass
+	public static void before() throws Exception{
 		candidate = new TrackerService();
-		server = startEmbeddedJetty(candidate, this);
+		server = startEmbeddedJetty(candidate, null);
 	}
 	
 	@Test
 	public void givenStandardTrackerService_whenCallingRun_thenServiceStartsUp() throws Exception{
 		assertThat(server.isRunning(), is(equalTo(true)));
-		assertThat(startedUp, is(equalTo(true)));
 	}
-
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-		this.startedUp = true;
-	}
-
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		this.startedUp = false;
+	
+	@Test
+	public void givenDbHealthChecker_whenCallingCheck_thenPositiveResult(){
+		for (HealthCheck checker: candidate.getHealthCheckers()){
+			Result result = checker.execute();
+			
+			//assertThat(""+result.getMessage(), result.isHealthy(), is(equalTo(true)));
+		}
 	}
 }

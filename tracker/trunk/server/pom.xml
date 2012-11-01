@@ -27,12 +27,28 @@
         	<artifactId>dropwizard-db</artifactId>
         	<version>${dropwizard.version}</version>
     	</dependency>
+    	<dependency>
+        	<groupId>com.yammer.dropwizard</groupId>
+        	<artifactId>dropwizard-db</artifactId>
+        	<version>${dropwizard.version}</version>
+    	</dependency>
+    	<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.21</version>
+		</dependency>
     	<!-- <dependency>
            <groupId>org.mortbay.jetty</groupId> used for embedded jetty integration tests
            <artifactId>jetty</artifactId>
            <version>${jetty.version}</version>
            <scope>test</scope>
        </dependency> -->
+       <dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
     <build>

@@ -11,9 +11,7 @@ import android.widget.DigitalClock;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 
-public class TrackingActivity extends MapActivity{
-
-	 private static final int DEFAULT_PROXIMITY_DISTANCE = 100;
+public class TrackingActivity extends MapActivity {
 
 	/**
      * Called when the activity is first created.
@@ -31,8 +29,8 @@ public class TrackingActivity extends MapActivity{
         
         DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
         
-        LocationService locationService = new LocationService((LocationManager) this.getSystemService(Context.LOCATION_SERVICE), DEFAULT_PROXIMITY_DISTANCE);
-
+        LocationService locationService = new LocationFactory().create(this, AndroidLogger.INSTANCE);
+        
         // Check if enabled and if not send user to the GSP settings
         // Better solution would be to display a dialog and suggesting to 
         // go to the settings

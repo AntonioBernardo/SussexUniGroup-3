@@ -1,6 +1,6 @@
 package uk.ac.sussex.asegr3.tracker.client.dto;
 
-public class LocationDto {
+public class LocationDto implements Comparable<LocationDto>{
 
 	private final double lat;
 	private final double lng;
@@ -59,6 +59,11 @@ public class LocationDto {
 	public String toString() {
 		return "LocationDto [lat=" + lat + ", lng=" + lng + ", timestamp="
 				+ timestamp + "]";
+	}
+
+	@Override
+	public int compareTo(LocationDto another) {
+		return (int)(this.getTimestamp() - another.getTimestamp());
 	}
 	
 	

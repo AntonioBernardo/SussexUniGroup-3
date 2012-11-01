@@ -1,4 +1,4 @@
-package uk.ac.sussex.asegr3.client;
+package uk.ac.sussex.asegr3.tracker.client.ui;
 
 import org.junit.Before;
 import org.junit.Test;

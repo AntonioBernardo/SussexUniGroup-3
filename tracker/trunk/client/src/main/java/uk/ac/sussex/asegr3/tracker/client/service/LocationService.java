@@ -48,9 +48,6 @@ public class LocationService implements LocationListener {
 
 	private void doLocationFiltering(Location location) {
 		
-		logger.debug(LocationService.class, "Recieved location update: "+location.toString());
-
-		
 		// logic here to filter
 		// need to work out how to best optimize location approximation
 
@@ -63,6 +60,7 @@ public class LocationService implements LocationListener {
 
 		if (location != null) {
 
+			logger.debug(LocationService.class, "Recieved location update: "+location.toString());
 			// this if will check if last and current location are close to each other by 100 meters
 			//or use the eclideoum equation
 			if (lastKnownLocation != null){

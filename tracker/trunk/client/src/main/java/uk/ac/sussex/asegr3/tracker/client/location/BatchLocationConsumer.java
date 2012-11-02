@@ -9,10 +9,11 @@ package uk.ac.sussex.asegr3.tracker.client.location;
 public interface BatchLocationConsumer {
 
 	/**
-	 * Processes a batch. Calls to this method should proceed a call to {@link #isReady()}
+	 * Processes a batch. Calls to this method should proceed a call to {@link #isReady()}.
+	 * This method returns true if the batch was successfully sent, false otherwise.
 	 * @param batch
 	 */
-	void processBatch(LocationBatch batch);
+	boolean processBatch(LocationBatch batch);
 	
 	/**
 	 * Determines if this consumer is ready to take any more batches. This method should be called

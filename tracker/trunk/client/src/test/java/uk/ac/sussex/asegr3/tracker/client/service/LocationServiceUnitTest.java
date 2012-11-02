@@ -118,6 +118,13 @@ public class LocationServiceUnitTest {
 	}
 	
 	@Test
+	public void givenNoLocation_whenCallingDoLocationFiltering_TheListenerNotNotified(){
+		
+		candidate.onLocationChanged(null);
+		verify(locationUpdateListenerMock, never()).notifyNewLocation(any(LocationDto.class));
+	}
+	
+	@Test
 	public void given2ValidLocationsInProximity_whenCallingDoLocationFiltering_thenNoListenerNotified(){
 		
 		Location androidLocationMock = mock(Location.class);

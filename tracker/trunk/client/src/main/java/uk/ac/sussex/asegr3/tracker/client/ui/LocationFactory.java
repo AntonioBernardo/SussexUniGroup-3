@@ -19,14 +19,19 @@ public class LocationFactory {
 	 private static final int DEFAULT_BATCH_SIZE = 10;
 	 private static final long DEFAULT_FLUSH_TIME = TimeUnit.MINUTES.toMillis(1);
 
-	public LocationService create(Activity activity, Logger logger) {
+	public LocationService create(Activity activity, MapViewProvider mapViewProvider, Logger logger) {
 		
-		LocationService service = new LocationService((LocationManager) activity.getSystemService(Context.LOCATION_SERVICE), DEFAULT_PROXIMITY_DISTANCE);
+		LocationService service = new LocationService((LocationManager) activity.getSystemService(Context.LOCATION_SERVICE), DEFAULT_PROXIMITY_DISTANCE, logger);
 		
 		BatchLocationConsumer consumer = new NoOpConsumer();
 		LocationCache locationCache = new LocationCache(DEFAULT_CACHE_LIMIT, DEFAULT_BATCH_SIZE, DEFAULT_FLUSH_TIME, consumer, logger);
 		
 		service.registerListener(locationCache);
+		
+		UiUpdater uiUpdater = new UiUpdater(mapViewProvider);
+		service.registerListener(uiUpdater);
+		
+		service.start();
 		return service;
 	}
 	

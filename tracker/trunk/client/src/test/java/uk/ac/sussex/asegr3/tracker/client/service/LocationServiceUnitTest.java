@@ -10,6 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationUpdateListener;
+import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 
 import android.location.Location;
 import android.location.LocationManager;
@@ -45,9 +46,12 @@ public class LocationServiceUnitTest {
 	@Mock
 	private LocationUpdateListener locationUpdateListenerMock;
 	
+	@Mock
+	private Logger loggerMock;
+	
 	@Before
 	public void before(){
-		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE);
+		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE, loggerMock);
 		candidate.registerListener(locationUpdateListenerMock);
 	}
 	
@@ -109,7 +113,6 @@ public class LocationServiceUnitTest {
 		candidate.onLocationChanged(androidLocationMock);
 		LocationDto expectedLocationDto = new LocationDto(TEST_LOCATION_LAT, TEST_LOCATION_LONG, TEST_LOCATION_TIME);
 		
-		
 		verify(locationUpdateListenerMock, times(1)).notifyNewLocation(expectedLocationDto);
 	
 	}
@@ -123,7 +126,7 @@ public class LocationServiceUnitTest {
 		when(androidLocationMock.getTime()).thenReturn(TEST_LOCATION_TIME);
 		when(androidLocationMock.getAccuracy()).thenReturn(GOOD_ACCURACY);
 		
-		when(locationManagerMock.getLastKnownLocation(LocationManager.GPS_PROVIDER)).thenReturn(androidLocationMock);
+		candidate.onLocationChanged(androidLocationMock);
 		
 		Location nearLocation = mock(Location.class);
 		when(nearLocation.getLatitude()).thenReturn(TEST_LOCATION_LAT+3);
@@ -131,9 +134,11 @@ public class LocationServiceUnitTest {
 		when(nearLocation.getTime()).thenReturn(TEST_LOCATION_TIME+1000);
 		when(nearLocation.getAccuracy()).thenReturn(GOOD_ACCURACY);
 		
+		when(androidLocationMock.distanceTo(nearLocation)).thenReturn(TEST_PROXIMITY_DISTANCE -1f);
+		
 		candidate.onLocationChanged(nearLocation);
 		
-		verify(locationUpdateListenerMock, never()).notifyNewLocation(any(LocationDto.class)); // still only called once.
+		verify(locationUpdateListenerMock, times(1)).notifyNewLocation(any(LocationDto.class)); // still only called once.
 	
 	}
 	

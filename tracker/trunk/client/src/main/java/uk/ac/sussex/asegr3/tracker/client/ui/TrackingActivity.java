@@ -1,17 +1,15 @@
 package uk.ac.sussex.asegr3.tracker.client.ui;
 
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
-import android.content.Context;
 import android.content.Intent;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.DigitalClock;
-
+import android.widget.Toast;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 
-public class TrackingActivity extends MapActivity {
+public class TrackingActivity extends MapActivity implements MapViewProvider{
 
 	/**
      * Called when the activity is first created.
@@ -24,12 +22,13 @@ public class TrackingActivity extends MapActivity {
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        MapView mapView = (MapView) findViewById(R.id.mapview);
+        MapView mapView = getMap();
         mapView.setBuiltInZoomControls(true);
+        // enable Street view by default
         
         DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
         
-        LocationService locationService = new LocationFactory().create(this, AndroidLogger.INSTANCE);
+        LocationService locationService = new LocationFactory().create(this, this, AndroidLogger.INSTANCE);
         
         // Check if enabled and if not send user to the GSP settings
         // Better solution would be to display a dialog and suggesting to 
@@ -37,13 +36,22 @@ public class TrackingActivity extends MapActivity {
         if (!locationService.hasRequiredPermissions()) {
           Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
           startActivity(intent);
-        } 
+         
+        }
+        
+        
+        
     }
 
 	@Override
 	protected boolean isRouteDisplayed() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public MapView getMap() {
+		return (MapView) findViewById(R.id.mapview);
 	}
 
 }

@@ -6,8 +6,8 @@ import java.util.List;
 //import org.mockito.cglib.proxy.CallbackGenerator.Context;
 
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,33 +18,27 @@ public class LocationService implements LocationListener {
 	private final List<LocationUpdateListener> listeners;
 	private final LocationManager locationManager;
 	private final int proximityDistance;
+	private final Logger logger;
+	private Location lastLocation = null;
 
-//	GeoPoint touchedPoint;
-//	Drawable d;
-//	MyLocationOverlay compass;
-//	MapController controller;
-	
-	
-	public LocationService(LocationManager locationManager, int proximityDistance) {
+	public LocationService(LocationManager locationManager, int proximityDistance, Logger logger) {
 		this.listeners = new LinkedList<LocationUpdateListener>();
 		this.locationManager = locationManager;
 		this.proximityDistance = proximityDistance;
+		this.logger = logger;
 	}
 
 	
 	public void start() {
 		// register this with location manager providers
-		
-	//	locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-		
-		
-		//place a pinpoint at the location
-		
-		//d = getResource().getDrawable(R.drawable.icon);
-		//OverLayItem overlayitem = new OverLayItem (touchedPoint,"Here!");
-	//GeoPoint myPoint = new GeoPoint();
+		logger.debug(this.getClass(), "Registering with gps and network providers");
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, proximityDistance, this);
+		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, proximityDistance, this);
 		
 		
+	}
+	
+	public void stop(){
 		
 	}
 
@@ -53,13 +47,16 @@ public class LocationService implements LocationListener {
 	}
 
 	private void doLocationFiltering(Location location) {
+		
+		logger.debug(LocationService.class, "Recieved location update: "+location.toString());
 
+		
 		// logic here to filter
 		// need to work out how to best optimize location approximation
 
 		boolean locationValid = false;
 		location = findGoodAccuracy(location);
-		Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		Location lastKnownLocation = getLastLocation();
 
 		//check if doesn't receive empty coordinates
 		// possible implementation would be to discard negative coordinates??
@@ -72,20 +69,31 @@ public class LocationService implements LocationListener {
 				if (lastKnownLocation.distanceTo(location) > proximityDistance) {
 
 					locationValid = true;
+				} else {
+					logger.debug(LocationService.class, "this location has not moved enough from last know location ("+lastKnownLocation+"). Ignoring location");
 				}
 			} else{
 				locationValid = true; // we dont have a last location so this must be valid.
 			}
+			
+			this.lastLocation = location;
 		}
 
 		if (locationValid) {
+			
 			notifyListeners(new LocationDto(location.getLatitude(),
 					location.getLongitude(), location.getTime()));
 		}
 	}
 
+	private Location getLastLocation() {
+		return lastLocation;
+	}
+
+
 	// this method will notify when a valid location have been added
 	private void notifyListeners(LocationDto location) {
+		logger.debug(LocationService.class, "location: "+location+" is valid.notifying listeners: "+listeners);
 		for (LocationUpdateListener listener : listeners) {
 			listener.notifyNewLocation(location);
 		}

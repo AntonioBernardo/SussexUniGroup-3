@@ -90,6 +90,4 @@ class StatementConnectionCaptor extends DelegatingConnection{
 	public String getCapturedSql(){
 		return capturedSql;
 	}
-	
-	
 }

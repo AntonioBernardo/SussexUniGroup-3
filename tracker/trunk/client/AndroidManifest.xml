@@ -18,7 +18,7 @@
         <uses-library android:name="com.google.android.maps" />
 
         <activity
-            android:name=".TrackingActivity"
+            android:name="uk.ac.sussex.asegr3.tracker.client.ui.TrackingActivity"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

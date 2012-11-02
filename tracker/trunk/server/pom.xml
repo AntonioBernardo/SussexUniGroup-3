@@ -50,6 +50,11 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql-connector.version}</version>
 		</dependency>
+		<dependency>
+        	<groupId>${project.groupId}</groupId>
+        	<artifactId>transport</artifactId>
+        	<version>${project.version}</version>
+    	</dependency>
     	<!-- <dependency>
            <groupId>org.mortbay.jetty</groupId> used for embedded jetty integration tests
            <artifactId>jetty</artifactId>

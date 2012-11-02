@@ -38,7 +38,7 @@ public class TrackerServiceIntegrationTest {
 		for (HealthCheck checker: candidate.getHealthCheckers()){
 			Result result = checker.execute();
 			
-			//assertThat(""+result.getMessage(), result.isHealthy(), is(equalTo(true)));
+			assertThat(""+result.getMessage(), result.isHealthy(), is(equalTo(true)));
 		}
 	}
 }

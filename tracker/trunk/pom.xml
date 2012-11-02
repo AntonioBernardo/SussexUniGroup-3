@@ -5,6 +5,7 @@
   <packaging>pom</packaging>
   <version>0.0.0.1-SNAPSHOT</version>
   <modules>
+	<module>transport</module>
 	<module>server</module>
   	<module>client</module>
   </modules>

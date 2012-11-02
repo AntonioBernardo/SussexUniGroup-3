@@ -7,6 +7,7 @@ import uk.ac.sussex.asegr3.tracker.server.api.TrackerResource;
 import uk.ac.sussex.asegr3.tracker.server.configuration.TrackerConfiguration;
 import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
 import uk.ac.sussex.asegr3.tracker.server.healthcheck.DatabaseHealthCheck;
+import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Environment;
@@ -30,7 +31,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		
 		addHealthCheck(environment, new DatabaseHealthCheck(database));
 		
-		environment.addResource(new TrackerResource());
+		environment.addResource(new TrackerResource(new LocationService(dao)));
 	}
 	
 	public List<HealthCheck> getHealthCheckers(){

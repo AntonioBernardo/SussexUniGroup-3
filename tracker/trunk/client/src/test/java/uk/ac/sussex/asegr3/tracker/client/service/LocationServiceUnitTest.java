@@ -49,9 +49,9 @@ public class LocationServiceUnitTest {
 	public void before(){
 		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE);
 		candidate.registerListener(locationUpdateListenerMock);
+		when(locationManagerMock.isProviderEnabled(LocationManager.GPS_PROVIDER)).thenReturn(true);
+		when(locationManagerMock.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).thenReturn(true);
 	}
-	
-	
 	
 	//@Test
 	public void ReceivingLocation_from_LocationManager(){
@@ -165,9 +165,23 @@ public class LocationServiceUnitTest {
 		assertThat(capture.getValue().equals(expectedLocationDto), is(equalTo(true)));
 	}
 	
+	@Test
+	public void givenNoGpsLocationService_whenCallingHasRequiredPermissions_thenReturnFalse(){
+		when(locationManagerMock.isProviderEnabled(LocationManager.GPS_PROVIDER)).thenReturn(false);
+		
+		assertThat(candidate.hasRequiredPermissions(), is(equalTo(false)));
+	}
 	
+	@Test
+	public void givenNoNetworkLocationService_whenCallingHasRequiredPermissions_thenReturnFalse(){
+		when(locationManagerMock.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).thenReturn(false);
+		
+		assertThat(candidate.hasRequiredPermissions(), is(equalTo(false)));
+	}
 	
-	
-	
-	
+	@Test
+	public void givenFullyPermissionedLocationService_whenCallingHasRequiredPermissions_thenReturnFalse(){
+		
+		assertThat(candidate.hasRequiredPermissions(), is(equalTo(true)));
+	}
 }

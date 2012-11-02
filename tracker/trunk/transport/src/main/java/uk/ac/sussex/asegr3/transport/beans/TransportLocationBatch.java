@@ -3,11 +3,15 @@ package uk.ac.sussex.asegr3.transport.beans;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name="batch")
 public class TransportLocationBatch {
 	
+	public static final String LOCATIONS_TAG = "locations";
+	
+	@XmlElement(name=LOCATIONS_TAG, required=true)
 	private Collection<TransportLocation> locations;
 
 	

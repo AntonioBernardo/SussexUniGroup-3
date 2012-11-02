@@ -1,12 +1,22 @@
 package uk.ac.sussex.asegr3.transport.beans;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class TransportLocation {
 	
+	public static final String LATTITUDE_TAG = "lattitude";
+	public static final String LONGITUDE_TAG = "longitude";
+	public static final String TIMESTAMP_TAG = "timestamp";
+	
+	@XmlElement(name=LATTITUDE_TAG, required=true)
 	private double lattitude;
+	
+	@XmlElement(name=LONGITUDE_TAG, required=true)
 	private double longitude;
+	
+	@XmlElement(name=TIMESTAMP_TAG, required=true)
 	private long timeStamp;
 	
 	public TransportLocation(){

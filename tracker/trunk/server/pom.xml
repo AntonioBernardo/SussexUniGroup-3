@@ -144,6 +144,7 @@
             <configuration>
               <srcFiles>
                 <srcFile>${project.build.directory}/test-classes/sql/setup-db.sql</srcFile>
+                <srcFile>${project.build.directory}/test-classes/sql/build-schema.sql</srcFile>
               </srcFiles>
             </configuration>
           </execution>

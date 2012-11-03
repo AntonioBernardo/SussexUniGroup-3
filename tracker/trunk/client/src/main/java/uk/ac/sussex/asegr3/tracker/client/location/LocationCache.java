@@ -104,26 +104,29 @@ public class LocationCache implements LocationUpdateListener{
 		try{
 			if (queue.size() > cacheLimit){
 				// remove head of queue. As this gets called once for every location this is good enough
-				readLock.unlock();
+				readLock.unlock(); // upgrade lock to write
 				writeLock.lock();
-				
 				try{
-					logger.debug(LocationCache.class, "Trimming location cache as it is over the threshold of: "+cacheLimit);
-					queue.remove(queue.first());
+					if (queue.size() > cacheLimit){ // recheck in case another thread has altered the queue since we released the read lock
+						logger.debug(LocationCache.class, "Trimming location cache as it is over the threshold of: "+cacheLimit);
+						queue.remove(queue.first());
+					}
 				}
 				finally{
-					readLock.lock();
+					readLock.lock(); // downgrade to read lock
 					writeLock.unlock();
 				}
 			}
 			
 			if (consumer.isReady()){
 				if (queue.size() >= defaultBatchSize || tooMuchTimePastInQueue(queue)){
-					readLock.unlock();
+					readLock.unlock(); // upgrade to write lock
 					writeLock.lock();
 					try{
-						logger.debug(LocationCache.class, "processing batch of size: "+queue.size());
-						processBatch(queue);
+						if (queue.size() >= defaultBatchSize || tooMuchTimePastInQueue(queue)){ // re compute in case another thread has changed the state of the queue whilst upgrading
+							logger.debug(LocationCache.class, "processing batch of size: "+queue.size());
+							processBatch(queue);
+						}
 					}
 					finally{
 						readLock.lock();

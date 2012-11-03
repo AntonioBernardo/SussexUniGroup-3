@@ -70,6 +70,10 @@ public class LocationCache implements LocationUpdateListener{
 			processQueue(queue);
 		}
 	}
+	
+	int getCacheSize(){
+		return queue.size();
+	}
 
 	private boolean addLocation(LocationDto locationDto) {
 		
@@ -87,7 +91,12 @@ public class LocationCache implements LocationUpdateListener{
 	}
 	
 	public void clear(){
-		queue.clear();
+		writeLock.lock();
+		try{
+			queue.clear();
+		} finally{
+			writeLock.unlock();
+		}
 	}
 
 	private void processQueue(SortedSet<LocationDto> queue) {
@@ -142,8 +151,6 @@ public class LocationCache implements LocationUpdateListener{
 		LocationBatch batch = new LocationBatch(new ArrayList<LocationDto>(queue), currentBatchVersion++);
 		BatchSendingTask worker = new BatchSendingTask(this, batch);
 		executor.execute(worker);
-		
-		queue.clear();
 	}
 
 	@Override
@@ -162,15 +169,20 @@ public class LocationCache implements LocationUpdateListener{
 
 		@Override
 		public void run() {
-			boolean isSuccessful = consumer.processBatch(batch);
-			
-			if (isSuccessful){
-				// nothing to do
-			} else{
-				// add back onto queue
-				for (LocationDto location: batch.getLocations()){
-					cache.addLocation(location);
+			writeLock.lock();
+			try{
+				boolean isSuccessful = consumer.processBatch(batch);
+				
+				if (isSuccessful){
+					cache.clear();
+				} else {
+					// add back onto queue
+					for (LocationDto location: batch.getLocations()){
+						cache.addLocation(location);
+					}
 				}
+			} finally{
+				writeLock.unlock();
 			}
 		}
 	}

@@ -54,6 +54,7 @@ public class LocationCacheUnitTest {
 			
 		});
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
+		when(batchLocationConsumerMock.processBatch(any(LocationBatch.class))).thenReturn(true);
 	}
 	
 	@Test
@@ -106,6 +107,7 @@ public class LocationCacheUnitTest {
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
 			candidate.notifyNewLocation(LocationDtoMock);
+			assertThat(candidate.getCacheSize() <= CACHE_LIMIT, is(equalTo(true)));
 		}
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
@@ -119,6 +121,7 @@ public class LocationCacheUnitTest {
 		verify(batchLocationConsumerMock, times(1)).processBatch(captor.capture());
 		
 		assertThat(Iterables.size(captor.getValue().getLocations()), is(equalTo(CACHE_LIMIT)));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
 		
 	}
 	
@@ -144,6 +147,7 @@ public class LocationCacheUnitTest {
 		LocationBatch capturedBatch = capture.getValue();
 		
 		assertThat(Iterables.size(capturedBatch.getLocations()), is(equalTo(CACHE_LIMIT)));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
 	}
 	
 	@Test
@@ -158,5 +162,23 @@ public class LocationCacheUnitTest {
 		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
 		candidate.notifyNewLocation(nextDto);
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
+	}
+	
+	@Test
+	public void givenFailedConsumer_whenCallingNotifyNewLocation_thenLocationsAreAddedBackIntoQueue(){
+		when(batchLocationConsumerMock.processBatch(any(LocationBatch.class))).thenReturn(false);
+		long currentTime = System.currentTimeMillis();
+		
+		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, currentTime);
+		candidate.notifyNewLocation(LocationDtoMock);
+		
+		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
+		
+		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
+		candidate.notifyNewLocation(nextDto);
+		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
+		
+		assertThat(candidate.getCacheSize(), is(equalTo(2)));
 	}
 }

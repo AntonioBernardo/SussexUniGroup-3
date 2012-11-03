@@ -1,5 +1,7 @@
 package uk.ac.sussex.asegr3.tracker.client.ui;
 
+import java.util.concurrent.Executor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class LocationFactoryUnitTest {
 
-	private LocationFactory candidate;
+	private LocationServiceFactory candidate;
 	
 	@Mock
 	private Activity activityMock;
@@ -36,15 +38,18 @@ public class LocationFactoryUnitTest {
 	@Mock
 	private LocationManager locationManagerMock;
 	
+	@Mock
+	private Executor executorMock;
+	
 	@Before
 	public void before(){
-		this.candidate = new LocationFactory();
+		this.candidate = new LocationServiceFactory();
 		when(activityMock.getSystemService(Context.LOCATION_SERVICE)).thenReturn(locationManagerMock);
 	}
 	
 	@Test
 	public void givenLocationFactory_whenCallingCreate_newLocationFactoryReturned(){
-		LocationService returnedService = candidate.create(activityMock, mapViewProviderMock, loggerMock);
+		LocationService returnedService = candidate.create(activityMock, mapViewProviderMock, loggerMock, executorMock);
 		
 		assertThat(returnedService, is(not(nullValue())));
 	}

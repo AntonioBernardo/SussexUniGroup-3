@@ -2,6 +2,7 @@ package uk.ac.sussex.asegr3.tracker.client.ui;
 
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.DigitalClock;
@@ -28,7 +29,7 @@ public class TrackingActivity extends MapActivity implements MapViewProvider{
         
         DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
         
-        LocationService locationService = new LocationFactory().create(this, this, AndroidLogger.INSTANCE);
+        LocationService locationService = new LocationServiceFactory().create(this, this, AndroidLogger.INSTANCE, AsyncTask.SERIAL_EXECUTOR);
         
         // Check if enabled and if not send user to the GSP settings
         // Better solution would be to display a dialog and suggesting to 
@@ -38,9 +39,6 @@ public class TrackingActivity extends MapActivity implements MapViewProvider{
           startActivity(intent);
          
         }
-        
-        
-        
     }
 
 	@Override

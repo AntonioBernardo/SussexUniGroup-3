@@ -14,16 +14,16 @@ import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 
-@Path("/tracker")
+@Path("/location")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class TrackerResource {
+public class LocationResource {
 	
-	private final LocationService serviceProvider;
+	private final LocationService locationService;
 	
-	public TrackerResource(LocationService serviceProvider){
+	public LocationResource(LocationService serviceProvider){
 		
-		this.serviceProvider = serviceProvider;
+		this.locationService = serviceProvider;
 	}
 
 	@POST
@@ -32,7 +32,7 @@ public class TrackerResource {
 		LocationDTO locationDetails=
 				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimeStamp());
 		
-		serviceProvider.storeLocation(locationDetails);
+		locationService.storeLocation(locationDetails);
 		
 	}
 	
@@ -49,6 +49,6 @@ public class TrackerResource {
 			locations.add(locationDetails);
 		}
 		
-		serviceProvider.storeLocations(locations);
+		locationService.storeLocations(locations);
 	}
 }

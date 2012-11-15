@@ -3,7 +3,7 @@ package uk.ac.sussex.asegr3.tracker.server;
 import java.util.LinkedList;
 import java.util.List;
 
-import uk.ac.sussex.asegr3.tracker.server.api.TrackerResource;
+import uk.ac.sussex.asegr3.tracker.server.api.LocationResource;
 import uk.ac.sussex.asegr3.tracker.server.configuration.TrackerConfiguration;
 import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
 import uk.ac.sussex.asegr3.tracker.server.healthcheck.DatabaseHealthCheck;
@@ -31,7 +31,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		
 		addHealthCheck(environment, new DatabaseHealthCheck(database));
 		
-		environment.addResource(new TrackerResource(new LocationService(dao)));
+		environment.addResource(new LocationResource(new LocationService(dao)));
 	}
 	
 	public List<HealthCheck> getHealthCheckers(){

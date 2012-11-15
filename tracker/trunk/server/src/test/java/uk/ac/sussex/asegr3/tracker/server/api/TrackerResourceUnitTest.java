@@ -19,7 +19,7 @@ import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 @RunWith(MockitoJUnitRunner.class)
 public class TrackerResourceUnitTest {
 
-	private TrackerResource candidate;
+	private LocationResource candidate;
 	
 	@Mock
 	private TrackerDao trackerDaoMock;
@@ -29,7 +29,7 @@ public class TrackerResourceUnitTest {
 	
 	@Before
 	public void before(){
-		candidate = new TrackerResource(new LocationService(trackerDaoMock));
+		candidate = new LocationResource(new LocationService(trackerDaoMock));
 		loc=new TransportLocation(0.0, 1.0, 1234567890);
 		locBatch=new TransportLocationBatch(new ArrayList<TransportLocation>());
 		locBatch.addLocation(loc);

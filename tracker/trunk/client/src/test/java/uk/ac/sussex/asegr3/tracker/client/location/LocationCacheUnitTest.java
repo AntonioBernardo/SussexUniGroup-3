@@ -1,5 +1,6 @@
 package uk.ac.sussex.asegr3.tracker.client.location;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -44,60 +45,69 @@ public class LocationCacheUnitTest {
 	
 	@Before
 	public void before(){
-		this.candidate = new LocationCache(CACHE_LIMIT, DEFAULT_BATCH_SIZE, CACHE_FLUSH_TIME, batchLocationConsumerMock, loggerMock);
+		this.candidate = new LocationCache(CACHE_LIMIT, DEFAULT_BATCH_SIZE, CACHE_FLUSH_TIME, batchLocationConsumerMock, loggerMock, new Executor(){
+
+			@Override
+			public void execute(Runnable command) {
+				command.run(); // same thread
+			}
+			
+		});
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
+		when(batchLocationConsumerMock.processBatch(any(LocationBatch.class))).thenReturn(true);
 	}
 	
 	@Test
-	public void givenConsumerAvaliableConsumer_whenCallingAddLocationOnce_thenNoLocationIsNotified(){
+	public void givenConsumerAvaliableConsumer_whenCallingNotifyNewLocationOnce_thenNoLocationIsNotified(){
 		LocationDto LocationDtoMock = mock(LocationDto.class);
-		candidate.addLocation(LocationDtoMock);
+		candidate.notifyNewLocation(LocationDtoMock);
 		
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 	}
 	
 	@Test
-	public void givenConsumerAvailable_whenCallingAddLocationTenTimes_thenLocationIsNotifiedOnce(){
+	public void givenConsumerAvailable_whenCallingNotifyNewLocationTenTimes_thenLocationIsNotifiedOnce(){
 		for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
-			candidate.addLocation(LocationDtoMock);
+			candidate.notifyNewLocation(LocationDtoMock);
 		}
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
 	}
 	
 	@Test
-	public void givenConsumerAvailable_whenCallingAddLocationFiftyTimes_thenLocationIsNotifiedFiveTimes(){
+	public void givenConsumerAvailable_whenCallingNotifyNewLocationFiftyTimes_thenLocationIsNotifiedFiveTimes(){
 		for (int batchNum = 0; batchNum < 5; batchNum++){
 			for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 				verify(batchLocationConsumerMock, times(batchNum)).processBatch(any(LocationBatch.class));
 				LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
-				candidate.addLocation(LocationDtoMock);
+				candidate.notifyNewLocation(LocationDtoMock);
 			}
 			verify(batchLocationConsumerMock, times(batchNum+1)).processBatch(any(LocationBatch.class));
 		}
 	}
 	
 	@Test
-	public void givenConsumerUnAvailable_whenCallingAddLocationFiftyTimes_thenLocationIsNotNotified(){
+	public void givenConsumerUnAvailable_whenCallingNotifyNewLocationFiftyTimes_thenLocationIsNotNotified(){
 		when(batchLocationConsumerMock.isReady()).thenReturn(false);
 		for (int batchNum = 0; batchNum < 5; batchNum++){
 			for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 				verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 				LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
-				candidate.addLocation(LocationDtoMock);
+				candidate.notifyNewLocation(LocationDtoMock);
 			}
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		}
 	}
 	
 	@Test
-	public void givenConsumerUnAvailable_whenCallingAddLocationThousandAndFiveTimes_thenLocationsAreTrimmed(){
+	public void givenConsumerUnAvailable_whenCallingNotifyNewLocationThousandAndFiveTimes_thenLocationsAreTrimmed(){
 		when(batchLocationConsumerMock.isReady()).thenReturn(false);
 		for (int i = 0; i < CACHE_LIMIT+5; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
-			candidate.addLocation(LocationDtoMock);
+			candidate.notifyNewLocation(LocationDtoMock);
+			assertThat(candidate.getCacheSize() <= CACHE_LIMIT, is(equalTo(true)));
 		}
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
@@ -106,21 +116,22 @@ public class LocationCacheUnitTest {
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
 		
 		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6);
-		candidate.addLocation(LocationDtoMock); // will trigger the callback
+		candidate.notifyNewLocation(LocationDtoMock); // will trigger the callback
 		ArgumentCaptor<LocationBatch> captor = ArgumentCaptor.forClass(LocationBatch.class);
 		verify(batchLocationConsumerMock, times(1)).processBatch(captor.capture());
 		
 		assertThat(Iterables.size(captor.getValue().getLocations()), is(equalTo(CACHE_LIMIT)));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
 		
 	}
 	
 	@Test
-	public void givenConsumerAvailable_whenCallingAddLocationThousandAndFiveTimes_thenLocationsAreTrimmed(){
+	public void givenConsumerAvailable_whenCallingNotifyNewLocationThousandAndFiveTimes_thenLocationsAreTrimmed(){
 		when(batchLocationConsumerMock.isReady()).thenReturn(false);
 		for (int i = 0; i < CACHE_LIMIT+5; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
-			candidate.addLocation(LocationDtoMock);
+			candidate.notifyNewLocation(LocationDtoMock);
 		}
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
@@ -129,26 +140,45 @@ public class LocationCacheUnitTest {
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
 		ArgumentCaptor<LocationBatch> capture = ArgumentCaptor.forClass(LocationBatch.class);
 		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6);
-		candidate.addLocation(LocationDtoMock); // will trigger the callback
+		candidate.notifyNewLocation(LocationDtoMock); // will trigger the callback
 		
 		verify(batchLocationConsumerMock, times(1)).processBatch(capture.capture());
 		
 		LocationBatch capturedBatch = capture.getValue();
 		
 		assertThat(Iterables.size(capturedBatch.getLocations()), is(equalTo(CACHE_LIMIT)));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
 	}
 	
 	@Test
-	public void givenConsumerAvailableAndLocationsWithTimesGreaterTheLimit_whenCallingAddLocation_thenLocationsAreNotified(){
+	public void givenConsumerAvailableAndLocationsWithTimesGreaterTheLimit_whenCallingNotifyNewLocation_thenLocationsAreNotified(){
 		long currentTime = System.currentTimeMillis();
 		
 		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, currentTime);
-		candidate.addLocation(LocationDtoMock);
+		candidate.notifyNewLocation(LocationDtoMock);
 		
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
 		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
-		candidate.addLocation(nextDto);
+		candidate.notifyNewLocation(nextDto);
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
+		assertThat(candidate.getCacheSize(), is(equalTo(0)));
+	}
+	
+	@Test
+	public void givenFailedConsumer_whenCallingNotifyNewLocation_thenLocationsAreAddedBackIntoQueue(){
+		when(batchLocationConsumerMock.processBatch(any(LocationBatch.class))).thenReturn(false);
+		long currentTime = System.currentTimeMillis();
+		
+		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, currentTime);
+		candidate.notifyNewLocation(LocationDtoMock);
+		
+		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
+		
+		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
+		candidate.notifyNewLocation(nextDto);
+		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
+		
+		assertThat(candidate.getCacheSize(), is(equalTo(2)));
 	}
 }

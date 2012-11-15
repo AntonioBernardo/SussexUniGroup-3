@@ -3,6 +3,7 @@ package uk.ac.sussex.asegr3.tracker.client.location;
 import java.util.ArrayList;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -29,6 +30,8 @@ import uk.ac.sussex.asegr3.tracker.client.util.Logger;
  *  if this stops receiving updates of locations then, it will also stop sending them, even if there are
  *  entries in the cache.
  *  
+ *  All calls to dispatch a batch to a consumer will be done so on an OS managed thread.
+ *  
  *  Please note that this class can be used in a multi thread environment
  * 
  * @author andrewhaines
@@ -45,21 +48,34 @@ public class LocationCache implements LocationUpdateListener{
 	private final Lock readLock;
 	private final Lock writeLock;
 	private final Logger logger;
+	private final Executor executor;
 	
-	public LocationCache(int cacheLimit, int defaultBatchSize, long cacheFlushTime, BatchLocationConsumer consumer, Logger logger) {
+	public LocationCache(int cacheLimit, int defaultBatchSize, long cacheFlushTime, BatchLocationConsumer consumer, Logger logger, Executor executor) {
 		this.cacheLimit = cacheLimit;
 		this.defaultBatchSize = defaultBatchSize;
 		this.cacheFlushTime = cacheFlushTime;
 		this.consumer = consumer;
 		this.logger = logger;
+		this.executor = executor;
 		
 		ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 		
 		this.readLock = readWriteLock.readLock();
 		this.writeLock = readWriteLock.writeLock();
 	}
+	
+	private void addLocationAndTryNotification(LocationDto locationDto){
+		
+		if (addLocation(locationDto)){
+			processQueue(queue);
+		}
+	}
+	
+	int getCacheSize(){
+		return queue.size();
+	}
 
-	public void addLocation(LocationDto locationDto) {
+	private boolean addLocation(LocationDto locationDto) {
 		
 		boolean added;
 		writeLock.lock();
@@ -71,47 +87,57 @@ public class LocationCache implements LocationUpdateListener{
 			writeLock.unlock();
 		}
 			
-		if (added){
-			processQueue(queue);
-		}
+		return added;
 	}
 	
 	public void clear(){
-		queue.clear();
+		writeLock.lock();
+		try{
+			queue.clear();
+		} finally{
+			writeLock.unlock();
+		}
 	}
 
 	private void processQueue(SortedSet<LocationDto> queue) {
 		readLock.lock();
 		try{
-			if (queue.size() == cacheLimit+1){
+			if (queue.size() > cacheLimit){
 				// remove head of queue. As this gets called once for every location this is good enough
-				readLock.unlock();
+				readLock.unlock(); // upgrade lock to write
 				writeLock.lock();
-				
 				try{
-					queue.remove(queue.first());
+					if (queue.size() > cacheLimit){ // recheck in case another thread has altered the queue since we released the read lock
+						logger.debug(LocationCache.class, "Trimming location cache as it is over the threshold of: "+cacheLimit);
+						queue.remove(queue.first());
+					}
 				}
 				finally{
-					readLock.lock();
+					readLock.lock(); // downgrade to read lock
 					writeLock.unlock();
 				}
-			} else if (queue.size() > cacheLimit){
-				throw new IllegalStateException("queue has "+queue.size()+" elements in it. Consider clearing the queue");
 			}
 			
 			if (consumer.isReady()){
 				if (queue.size() >= defaultBatchSize || tooMuchTimePastInQueue(queue)){
-					readLock.unlock();
+					readLock.unlock(); // upgrade to write lock
 					writeLock.lock();
 					try{
-						processBatch();
+						if (queue.size() >= defaultBatchSize || tooMuchTimePastInQueue(queue)){ // re compute in case another thread has changed the state of the queue whilst upgrading
+							logger.debug(LocationCache.class, "processing batch of size: "+queue.size());
+							processBatch(queue);
+						}
 					}
 					finally{
 						readLock.lock();
 						writeLock.unlock();
 					}
-				} 
-			} 
+				} else{
+					logger.debug(LocationCache.class, "Not notifying consumer as batch is not at its default size of: "+defaultBatchSize+" ("+queue.size()+") and time difference is not greater then "+cacheFlushTime);
+				}
+			} else{
+				logger.debug(LocationCache.class, "Consumer is not ready to recieve messages");
+			}
 		} finally {
 			readLock.unlock();
 		}
@@ -124,16 +150,43 @@ public class LocationCache implements LocationUpdateListener{
 		return (lastLocation.getTimestamp() - firstLocation.getTimestamp()) >= cacheFlushTime;
 	}
 
-	private void processBatch() {
+	private void processBatch(SortedSet<LocationDto> queue) {
 		LocationBatch batch = new LocationBatch(new ArrayList<LocationDto>(queue), currentBatchVersion++);
-		
-		consumer.processBatch(batch);
-		queue.clear();
+		BatchSendingTask worker = new BatchSendingTask(this, batch);
+		executor.execute(worker);
 	}
 
 	@Override
 	public void notifyNewLocation(LocationDto location) {
-		addLocation(location);
+		addLocationAndTryNotification(location);
 	}
 
+	private class BatchSendingTask implements Runnable{
+		private final LocationCache cache;
+		private final LocationBatch batch;
+		
+		private BatchSendingTask(LocationCache cache, LocationBatch batch){
+			this.cache = cache;
+			this.batch = batch;
+		}
+
+		@Override
+		public void run() {
+			writeLock.lock();
+			try{
+				boolean isSuccessful = consumer.processBatch(batch);
+				
+				if (isSuccessful){
+					cache.clear();
+				} else {
+					// add back onto queue
+					for (LocationDto location: batch.getLocations()){
+						cache.addLocation(location);
+					}
+				}
+			} finally{
+				writeLock.unlock();
+			}
+		}
+	}
 }

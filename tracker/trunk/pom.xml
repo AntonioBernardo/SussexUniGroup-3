@@ -8,6 +8,7 @@
 	<module>transport</module>
 	<module>server</module>
   	<module>client</module>
+  	<module>acceptance-tests</module>
   </modules>
   <dependencies>
         <!-- testing dependencies -->

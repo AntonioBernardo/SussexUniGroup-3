@@ -38,13 +38,4 @@ public class TransportLocationBatch {
 	public void addLocation(TransportLocation location){
 		locations.add(location);
 	}
-	
-	public void removeLocation(TransportLocation location){
-		locations.remove(location);
-	}
-	
-	
-	
-	
-
 }

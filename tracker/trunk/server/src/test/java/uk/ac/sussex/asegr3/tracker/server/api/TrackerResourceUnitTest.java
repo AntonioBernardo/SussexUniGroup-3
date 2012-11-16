@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
 import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
@@ -19,10 +20,16 @@ import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 @RunWith(MockitoJUnitRunner.class)
 public class TrackerResourceUnitTest {
 
+	private static final String TEST_USERNAME = "testUserName";
+
+	private static final long TEST_SESSION_EXPIRY = System.currentTimeMillis()+10000;
+
 	private LocationResource candidate;
 	
 	@Mock
 	private TrackerDao trackerDaoMock;
+	
+	private LoggedInUser loggedInUserMock = new LoggedInUser(TEST_SESSION_EXPIRY, TEST_USERNAME);
 	
 	private TransportLocation loc;
 	private TransportLocationBatch locBatch;
@@ -37,8 +44,8 @@ public class TrackerResourceUnitTest {
 	
 	@Test
 	public void givenValidLocation_whenCallingAddLocation_thenAppropriateServiceCalled(){
-		candidate.addLocation(new TransportLocation(1.0, 2.0, 45678));
-		candidate.addLocations(locBatch);
+		candidate.addLocation(loggedInUserMock, new TransportLocation(1.0, 2.0, 45678));
+		candidate.addLocations(loggedInUserMock, locBatch);
 		verify(trackerDaoMock, times(1)).insert(1, 1.0, 2.0, 45678);
 		verify(trackerDaoMock, times(1)).insert(1, 0.0, 1.0, 1234567890);
 	}

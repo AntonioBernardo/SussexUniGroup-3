@@ -6,6 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 
 public class TransportAuthenticationTokenUnitTest {
 
@@ -25,6 +26,7 @@ public class TransportAuthenticationTokenUnitTest {
 	@Test
 	public void givenTransportAuthenticationToken_whenCallingGetToken_correctValueReturned(){
 		String token = candidate.getToken();
+		candidate.toString();
 		
 		assertThat(token, is(equalTo(TEST_TOKEN)));
 	}
@@ -39,7 +41,40 @@ public class TransportAuthenticationTokenUnitTest {
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void givenInvalidStringToken_whenCallingcreateAuthenticationTokenFromString_thenExceptionThrown(){
+	public void givenInvalidStringToken_whenCallingCreateAuthenticationTokenFromString_thenExceptionThrown(){
 		TransportAuthenticationToken.createAuthenticationTokenFromString(TEST_INVALID_TOKEN);
+	}
+	
+	@Test
+	public void givenEqualTokens_whenCallingEquals_thenReturnsTrue(){
+		assertThat(candidate, is(equalTo(new TransportAuthenticationToken(TEST_USER, TEST_SIGNATURE, TEST_EXPIRES))));
+	}
+	
+	@Test
+	public void givenNotEqualUserName_whenCallingEquals_thenReturnsFalse(){
+		assertThat(candidate, is(not(equalTo(new TransportAuthenticationToken(TEST_USER+1, TEST_SIGNATURE, TEST_EXPIRES)))));
+	}
+	
+	@Test
+	public void givenNotEqualSignature_whenCallingEquals_thenReturnsFalse(){
+		assertThat(candidate, is(not(equalTo(new TransportAuthenticationToken(TEST_USER, TEST_SIGNATURE+1, TEST_EXPIRES)))));
+	}
+	
+	@Test
+	public void givenNotEqualExpiration_whenCallingEquals_thenReturnsFalse(){
+		assertThat(candidate, is(not(equalTo(new TransportAuthenticationToken(TEST_USER, TEST_SIGNATURE, TEST_EXPIRES+1)))));
+	}
+	
+	@Test
+	public void givenNotSameTypeTokens_whenCallingEquals_thenReturnsFalse(){
+		assertThat(candidate, is(not(equalTo(new Object()))));
+	}
+	
+	@Test
+	public void givenEqualTokens_whenCallingHashCode_thenReturnsSameValue(){
+		int hash1 = new TransportAuthenticationToken(TEST_USER, TEST_SIGNATURE, TEST_EXPIRES).hashCode();
+		int hash2 = candidate.hashCode();
+		
+		assertThat(hash1, is(equalTo(hash2)));
 	}
 }

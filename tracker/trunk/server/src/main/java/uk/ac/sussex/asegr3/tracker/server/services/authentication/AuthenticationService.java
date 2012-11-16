@@ -10,8 +10,10 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import uk.ac.sussex.asegr3.tracker.server.Clock;
 import uk.ac.sussex.asegr3.tracker.server.dao.UserDao;
 import uk.ac.sussex.asegr3.tracker.server.services.authentication.SecurityViolationException.Type;
+import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
 
 public class AuthenticationService {
 
@@ -22,10 +24,12 @@ public class AuthenticationService {
 
 	private final UserDao userDao;
 	private final long timeToExpire;
+	private final Clock currentClock;
 
-	public AuthenticationService(UserDao userDao, long timeToExpire) {
+	public AuthenticationService(UserDao userDao, long timeToExpire, Clock currentClock) {
 		this.userDao = userDao;
 		this.timeToExpire = timeToExpire;
+		this.currentClock = currentClock;
 	}
 
 	public AuthenticationToken authenticateUser(String username, String password) {
@@ -35,9 +39,9 @@ public class AuthenticationService {
 		String storedHash = userDao.getPasswordForUser(username);
 		
 		if (pwHash.equals(storedHash)){
-			long expirationTime = System.currentTimeMillis()+timeToExpire;
+			long expirationTime = currentClock.getCurrentTime()+timeToExpire;
 			try {
-				String signature = calculateSignature(username+""+timeToExpire);
+				String signature = calculateSignature(buildCompositeDataForSignature(username, expirationTime));
 				return new AuthenticationToken(username, expirationTime, signature);
 			} catch (SignatureException e) {
 				throw new SecurityViolationException(Type.SIGNATURE_GENERATION, e);
@@ -46,6 +50,10 @@ public class AuthenticationService {
 		} else{
 			throw new SecurityViolationException(Type.PASSWORD_MISMATCH);
 		}
+	}
+	
+	private String buildCompositeDataForSignature(String username, long expirationTime){
+		return username+""+expirationTime;
 	}
 
 	private String calculateSignature(String data)
@@ -83,6 +91,18 @@ public class AuthenticationService {
 
 		// Converts message digest value in base 16 (hex)
 		return new BigInteger(1, digest.digest()).toString(16);
+	}
+
+	public boolean validateToken(TransportAuthenticationToken credentials) throws SignatureException {
+		String expectedSignature = calculateSignature(buildCompositeDataForSignature(credentials.getUsername(), credentials.getExpires()));
+		
+		if (expectedSignature.equals(credentials.getSignature())){
+			if (credentials.getExpires() < System.currentTimeMillis()){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 }

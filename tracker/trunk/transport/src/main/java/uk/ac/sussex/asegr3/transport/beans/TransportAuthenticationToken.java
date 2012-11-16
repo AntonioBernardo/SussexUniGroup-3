@@ -67,5 +67,24 @@ public class TransportAuthenticationToken {
 		
 		return new TransportAuthenticationToken(username, signature, expires);
 	}
+
+	@Override
+	public int hashCode() {
+		return this.getUsername().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof TransportAuthenticationToken){
+			TransportAuthenticationToken other = (TransportAuthenticationToken)obj;
+			
+			return this.getUsername().equals(other.getUsername()) &&
+					this.getSignature().equals(other.getSignature()) &&
+					this.getExpires() == other.getExpires();
+		}
+		
+		return false;
+	}
+	
 	
 }

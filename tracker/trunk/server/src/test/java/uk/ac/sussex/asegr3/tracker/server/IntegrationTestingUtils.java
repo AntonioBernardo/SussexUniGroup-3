@@ -3,6 +3,7 @@ package uk.ac.sussex.asegr3.tracker.server;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.servlet.ServletContextListener;
@@ -88,8 +89,12 @@ public class IntegrationTestingUtils {
 
 	private static File getClasspathConfigFile(String configFileName)
 			throws IOException, URISyntaxException {
-		File testConfig = new File(IntegrationTestingUtils.class.getResource(
-				configFileName).toURI());
+		URI configURI = IntegrationTestingUtils.class.getResource(
+				configFileName).toURI();
+		
+		LOG.info("using config file at: "+configURI);
+		
+		File testConfig = new File(configURI);
 
 		return testConfig;
 	}

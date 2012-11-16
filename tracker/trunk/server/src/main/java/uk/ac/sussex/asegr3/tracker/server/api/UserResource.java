@@ -29,6 +29,7 @@ public class UserResource {
 	}
 	
 	@Path("/${username}/authenticate")
+	@POST
 	public TransportAuthenticationToken authenticateUser(@PathParam("username") String username, TransportAuthenticationRequest request){
 		AuthenticationToken token = authenticationService.authenticateUser(username, request.getPassword());
 		

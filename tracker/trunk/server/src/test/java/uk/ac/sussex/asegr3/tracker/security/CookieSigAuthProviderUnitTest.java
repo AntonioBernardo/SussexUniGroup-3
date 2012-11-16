@@ -68,11 +68,11 @@ public class CookieSigAuthProviderUnitTest {
 		
 		// set up http context
 		
-		when(cookieMock.getName()).thenReturn(CookieSigAuthProvider.AUTHENTICATION_SIGNATURE_COOKIE_NAME);
+		when(cookieMock.getName()).thenReturn(TransportAuthenticationToken.AUTHENTICATION_SIGNATURE_COOKIE_NAME);
 		when(cookieMock.getValue()).thenReturn(token.getToken());
 		
 		Map<String, Cookie> cookieMap = new HashMap<String, Cookie>();
-		cookieMap.put(CookieSigAuthProvider.AUTHENTICATION_SIGNATURE_COOKIE_NAME, cookieMock);
+		cookieMap.put(TransportAuthenticationToken.AUTHENTICATION_SIGNATURE_COOKIE_NAME, cookieMock);
 		when(httpRequestMock.getCookies()).thenReturn(cookieMap);
 		when(httpContextMock.getRequest()).thenReturn(httpRequestMock);
 		

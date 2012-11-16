@@ -2,12 +2,25 @@ package uk.ac.sussex.asegr3.transport.beans;
 
 import java.nio.charset.Charset;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.commons.codec.binary.Base64;
 
+@XmlRootElement
 public class TransportAuthenticationToken {
+	
+	public static final String AUTHENTICATION_SIGNATURE_COOKIE_NAME = "__uk.ac.sussex.asegr3.tracker.AUTH";
 
+	private static final String USERNAME_TAG = "username";
+	private static final String SIGNATURE_TAG = "signature";
+	private static final String EXPIRES_TAG = "expires";
+
+	@XmlElement(name=USERNAME_TAG, required=true)
 	private String username;
+	@XmlElement(name=SIGNATURE_TAG, required=true)
 	private String signature;
+	@XmlElement(name=EXPIRES_TAG, required=true)
 	private long expires;
 	
 	public TransportAuthenticationToken(){

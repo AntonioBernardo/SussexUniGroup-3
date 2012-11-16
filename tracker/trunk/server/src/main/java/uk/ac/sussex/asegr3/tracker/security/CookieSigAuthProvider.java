@@ -25,7 +25,6 @@ import com.yammer.dropwizard.auth.Authenticator;
 public class CookieSigAuthProvider<T> implements InjectableProvider<Auth, Parameter> {
 
 	public static final Logger LOG = LoggerFactory.getLogger(CookieSigAuthProvider.class);
-	public static final String AUTHENTICATION_SIGNATURE_COOKIE_NAME = "__uk.ac.sussex.asegr3.tracker.AUTH";
 	
 	private final Authenticator<TransportAuthenticationToken, T> authenticator;
 	private final String realm;
@@ -62,7 +61,7 @@ public class CookieSigAuthProvider<T> implements InjectableProvider<Auth, Parame
 
 		@Override
 		public T getValue(HttpContext c) {
-			Cookie cookie = c.getRequest().getCookies().get(AUTHENTICATION_SIGNATURE_COOKIE_NAME);
+			Cookie cookie = c.getRequest().getCookies().get(TransportAuthenticationToken.AUTHENTICATION_SIGNATURE_COOKIE_NAME);
 			if (cookie != null){
 				String token = cookie.getValue();
 				TransportAuthenticationToken transportToken = TransportAuthenticationToken.createAuthenticationTokenFromString(token);

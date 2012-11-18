@@ -33,7 +33,7 @@ public class LocationResource {
 	public void addLocation(@Auth LoggedInUser user, TransportLocation location){
 		
 		LocationDTO locationDetails=
-				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimeStamp());
+				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimestamp());
 		
 		locationService.storeLocation(locationDetails);
 		
@@ -47,7 +47,7 @@ public class LocationResource {
 		
 		for(TransportLocation transportLocation : transportLocations.getLocations()){
 			LocationDTO locationDetails=new LocationDTO(transportLocation.getLattitude(), 
-					transportLocation.getLongitude(), transportLocation.getTimeStamp());
+					transportLocation.getLongitude(), transportLocation.getTimestamp());
 			
 			locations.add(locationDetails);
 		}

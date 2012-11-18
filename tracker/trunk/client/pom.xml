@@ -11,10 +11,6 @@
         <version>0.0.0.1-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <platform.version>4.1.2_r3</platform.version>
-    </properties>
-
     <dependencies>
         <!--  the following are dependencies to overwrite the stubbed implementations in android 16 for testing only -->
         <dependency>
@@ -38,7 +34,7 @@
         <dependency>
             <groupId>android</groupId>
             <artifactId>android</artifactId>
-            <version>${platform.version}</version>
+            <version>${client-platform.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -1,6 +1,7 @@
 package uk.ac.sussex.asegr3.tracker.server.services.authentication;
 
 import java.security.SignatureException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +23,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 @RunWith(MockitoJUnitRunner.class)
 public class AuthenticationServiceUnitTest {
 
-	private static final long TEST_TIME = 1000;
+	private static final int TEST_TIME = 1000;
 	private static final String TEST_USERNAME = "testUser";
 	private static final String TEST_PASSWORD = "testPassword";
 	private static final String TEST_ENCRYPTED_PASSWORD = "99d541d0226afdb95b5d8432e9e640e49310ca13f0f9fdb60e415200a1523fe6";
 	private static final String TEST_INVALID_ENCRYPTED_PASSWORD = "dd";
-	private static final String TEST_SIGNATURE = "a9665f2124162930f774d7d62d1979ca4e329dd1";
+	private static final String TEST_SIGNATURE = "5f08c8aadd3c04532f55c61cbbcf68e787b12e5a";
 	private static final Long TEST_CURRENT_TIME = 1234567890L;
 	
 	private AuthenticationService candidate;
@@ -47,7 +48,7 @@ public class AuthenticationServiceUnitTest {
 	@Test
 	public void givenValidCredentials_whenCallingAuthenticateUser_thenValidTokenReturned(){
 		when(userDaoMock.getPasswordForUser(TEST_USERNAME)).thenReturn(TEST_ENCRYPTED_PASSWORD);
-		long expectedExpiry = TEST_TIME + TEST_CURRENT_TIME;
+		long expectedExpiry = TimeUnit.SECONDS.toMillis(TEST_TIME) + TEST_CURRENT_TIME;
 		AuthenticationToken token = candidate.authenticateUser(TEST_USERNAME, TEST_PASSWORD);
 		
 		assertThat(token, is(not(nullValue())));
@@ -64,13 +65,13 @@ public class AuthenticationServiceUnitTest {
 	
 	@Test
 	public void givenValidToken_whenCallingValidateToken_thenReturnsTrue() throws SignatureException{
-		TransportAuthenticationToken validToken = new TransportAuthenticationToken(TEST_USERNAME, TEST_SIGNATURE,TEST_CURRENT_TIME+TEST_TIME);
+		TransportAuthenticationToken validToken = new TransportAuthenticationToken(TEST_USERNAME, TEST_SIGNATURE,TEST_CURRENT_TIME+TimeUnit.SECONDS.toMillis(TEST_TIME));
 		assertThat(candidate.validateToken(validToken), is(equalTo(true)));
 	}
 	
 	@Test
 	public void givenInvalidToken_whenCallingValidateToken_thenReturnsTrue() throws SignatureException{
-		TransportAuthenticationToken invalidToken = new TransportAuthenticationToken(TEST_USERNAME, TEST_SIGNATURE+43,TEST_CURRENT_TIME+TEST_TIME);
+		TransportAuthenticationToken invalidToken = new TransportAuthenticationToken(TEST_USERNAME, TEST_SIGNATURE+43,TEST_CURRENT_TIME+TimeUnit.SECONDS.toMillis(TEST_TIME));
 		assertThat(candidate.validateToken(invalidToken), is(equalTo(false)));
 	}
 	

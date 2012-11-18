@@ -3,6 +3,7 @@ package uk.ac.sussex.asegr3.tracker.server.services.authentication;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.SignatureException;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,9 +27,9 @@ public class AuthenticationService {
 	private final long timeToExpire;
 	private final Clock currentClock;
 
-	public AuthenticationService(UserDao userDao, long timeToExpire, Clock currentClock) {
+	public AuthenticationService(UserDao userDao, int timeToExpire, Clock currentClock) {
 		this.userDao = userDao;
-		this.timeToExpire = timeToExpire;
+		this.timeToExpire = TimeUnit.SECONDS.toMillis(timeToExpire);
 		this.currentClock = currentClock;
 	}
 
@@ -97,7 +98,7 @@ public class AuthenticationService {
 		String expectedSignature = calculateSignature(buildCompositeDataForSignature(credentials.getUsername(), credentials.getExpires()));
 		
 		if (expectedSignature.equals(credentials.getSignature())){
-			if (credentials.getExpires() < System.currentTimeMillis()){
+			if (credentials.getExpires() > currentClock.getCurrentTime()){
 				return true;
 			}
 		}

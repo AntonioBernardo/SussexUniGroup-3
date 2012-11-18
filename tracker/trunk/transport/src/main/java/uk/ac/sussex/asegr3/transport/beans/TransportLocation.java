@@ -17,7 +17,7 @@ public class TransportLocation {
 	private double longitude;
 	
 	@XmlElement(name=TIMESTAMP_TAG, required=true)
-	private long timeStamp;
+	private long timestamp;
 	
 	public TransportLocation(){
 		
@@ -27,7 +27,7 @@ public class TransportLocation {
 	public TransportLocation(double lattitude, double longitude, long timeStamp){
 		this.setLattitude(lattitude);
 		this.setLongitude(longitude);
-		this.setTimeStamp(timeStamp);
+		this.setTimestamp(timeStamp);
 	}
 
 	public double getLattitude() {
@@ -46,12 +46,12 @@ public class TransportLocation {
 		this.longitude = longitude;
 	}
 
-	public long getTimeStamp() {
-		return timeStamp;
+	public long getTimestamp() {
+		return timestamp;
 	}
 
-	public void setTimeStamp(long timeStamp) {
-		this.timeStamp = timeStamp;
+	public void setTimestamp(long timeStamp) {
+		this.timestamp = timeStamp;
 	}
 	
 	

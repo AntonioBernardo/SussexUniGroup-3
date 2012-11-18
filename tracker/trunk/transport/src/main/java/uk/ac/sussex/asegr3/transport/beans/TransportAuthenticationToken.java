@@ -12,9 +12,9 @@ public class TransportAuthenticationToken {
 	
 	public static final String AUTHENTICATION_SIGNATURE_COOKIE_NAME = "__uk.ac.sussex.asegr3.tracker.AUTH";
 
-	private static final String USERNAME_TAG = "username";
-	private static final String SIGNATURE_TAG = "signature";
-	private static final String EXPIRES_TAG = "expires";
+	public static final String USERNAME_TAG = "username";
+	public static final String SIGNATURE_TAG = "signature";
+	public static final String EXPIRES_TAG = "expires";
 
 	@XmlElement(name=USERNAME_TAG, required=true)
 	private String username;

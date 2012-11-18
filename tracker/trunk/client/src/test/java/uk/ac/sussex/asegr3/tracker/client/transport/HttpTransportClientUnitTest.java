@@ -50,7 +50,15 @@ public class HttpTransportClientUnitTest {
 
 	private static final Object EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT = "{\"locations\":[{\"timestamp\":1351874788222,\"lattitude\":45.657,\"longitude\":85.623},{\"timestamp\":1351874789222,\"lattitude\":50.657,\"longitude\":79.623}]}";
 
-	private static final String TEST_TOKEN = "testToken";
+	private static final String TEST_TOKEN = "dGVzdFVzZXI=\r\n_1234567_YWJjZDEyMzQ=\r\n";
+
+	private static final String TEST_USERNAME = "testUser";
+
+	private static final String TEST_PASSWORD = "testPassword";
+
+	private static final String EXPECTED_AUTH_REQUEST = "{\"password\":\"testPassword\"}";
+
+	private static final String TEST_SUC_AUTH_RESPONSE = "{\"username\":\"testUser\", \"signature\":\"abcd1234\", \"expires\"=\"1234567\"}";
 	
 	@Mock
 	private Logger loggerMock;
@@ -93,6 +101,22 @@ public class HttpTransportClientUnitTest {
 		when(httpConnectionMock.getResponseCode()).thenReturn(200);
 		
 		when(networkInfoProviderMock.getNetworkInfo()).thenReturn(networkInfoMock);
+	}
+	
+	@Test
+	public void givenCorrectLoginCredentials_whenCallingLogin_thenReturnCorrectToken() throws AuthenticationException, IOException{
+		byteArrayInputStream = new ByteArrayInputStream(TEST_SUC_AUTH_RESPONSE.getBytes());
+		when(httpConnectionMock.getInputStream()).thenReturn(byteArrayInputStream);
+		
+		String token = candidate.login(TEST_USERNAME, TEST_PASSWORD);
+		
+		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
+		
+		String sentJsonContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
+		
+		assertThat(sentJsonContent, is(equalTo(EXPECTED_AUTH_REQUEST)));
+		
+		assertThat(token, is(equalTo(TEST_TOKEN)));
 	}
 	
 	@Test

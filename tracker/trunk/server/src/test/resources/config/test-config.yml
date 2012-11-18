@@ -35,3 +35,7 @@ database:
 
   # the maximum lifetime of an idle connection
   closeConnectionIfIdleFor: 1 minute
+
+authentication:
+  # 1 week for a session to expire
+  sessionTTLSecs: 604800

@@ -13,6 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import uk.ac.sussex.asegr3.tracker.client.service.login.LoginGrantedListener;
 import uk.ac.sussex.asegr3.tracker.client.service.login.LoginService;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
+import uk.ac.sussex.asegr3.tracker.client.transport.AuthenticationException;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -43,11 +44,11 @@ public class LoginServiceUnitTest {
 	@Mock
 	private NetworkInfoProvider networkInfoProviderMock;
 	
-	private HttpTransportClientApiFactory apiFactory;
+	@Mock
+	private HttpTransportClientApiFactory httpTransportClientApiFactoryMock;
 	
 	@Before
 	public void before() throws MalformedURLException, URISyntaxException{
-		apiFactory = HttpTransportClientApiFactory.create(TEST_HOSTNAME, loggerMock, networkInfoProviderMock);
 		this.candidate = new LoginService(loginGrantedListenerMock, new Executor(){
 
 			@Override
@@ -55,7 +56,7 @@ public class LoginServiceUnitTest {
 				command.run(); // sync executor
 			}
 			
-		}, apiFactory, loggerMock);
+		}, httpTransportClientApiFactoryMock, loggerMock);
 	}
 	
 	@Test
@@ -66,9 +67,9 @@ public class LoginServiceUnitTest {
 	}
 	
 	//@Test
-	public void givenInValidUserNamePasswords_whenCallingLogin_thenListenerNotifiedWithApi(){
+	public void givenInValidUserNamePasswords_whenCallingLogin_thenListenerNotifiedWithApi() throws AuthenticationException{
 		Exception exception = new RuntimeException("TEST_ERROR");
-		when(apiFactory.create(TEST_USERNAME, TEST_PASSWORD)).thenThrow(exception);
+		when(httpTransportClientApiFactoryMock.create(TEST_USERNAME, TEST_PASSWORD)).thenThrow(exception);
 		candidate.login(TEST_USERNAME, TEST_PASSWORD);
 		
 		verify(loginGrantedListenerMock, never()).processLogin(any(HttpTransportClientApi.class));

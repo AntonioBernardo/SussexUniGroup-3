@@ -30,7 +30,7 @@ public class TrackerDaoUnitTest {
 	private static final double TEST_LAT = 85.3453;
 	private static final double TEST_LONG = 98453.5646432;
 	private static final long TEST_TIMESTAMP = 34578345723L;
-	private static final String EXPECTED_SQL = "insert into location (user_id, latitude, longitude, timestamp) values (?, ?, ?, ?)";
+	private static final String EXPECTED_SQL = "insert into location (FK_User_id, latitude, longitude, timestamp) values (?, ?, ?, ?)";
 
 	private TrackerDao candidate;
 	

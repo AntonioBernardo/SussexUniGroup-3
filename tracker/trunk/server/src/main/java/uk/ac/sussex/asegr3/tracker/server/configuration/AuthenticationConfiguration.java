@@ -10,9 +10,9 @@ public class AuthenticationConfiguration {
 	@Valid
     @NotNull
     @JsonProperty
-	private long sessionTTL;
+	private int sessionTTLSecs;
 
-	public long getSessionTTL() {
-		return sessionTTL;
+	public int getSessionTTLSecs() {
+		return sessionTTLSecs;
 	}
 }

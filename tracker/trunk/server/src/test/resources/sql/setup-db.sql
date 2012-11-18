@@ -1,4 +1,6 @@
 create database IF NOT EXISTS tracker;
+drop database tracker;
+create database IF NOT EXISTS tracker;
 
 GRANT USAGE ON *.* TO 'tracker'@'localhost';
 GRANT USAGE ON *.* TO 'tracker'@'%';

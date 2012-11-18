@@ -15,6 +15,7 @@ import uk.ac.sussex.asegr3.tracker.server.healthcheck.DatabaseHealthCheck;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.tracker.server.services.authentication.AuthenticationService;
 
+import com.sun.jersey.api.core.ResourceConfig;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.db.Database;
@@ -52,6 +53,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		// resources
 		environment.addResource(new LocationResource(new LocationService(dao)));
 		environment.addResource(new UserResource(authService));
+		environment.enableJerseyFeature(ResourceConfig.FEATURE_TRACE);
 		
 		// providers
 		environment.addProvider(new CookieSigAuthProvider<LoggedInUser>(new UserAuthenticator(authService),
@@ -59,7 +61,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 	}
 	
 	private AuthenticationService createAuthenticationService(UserDao userDao, TrackerConfiguration conf, Clock clock) {
-		return new AuthenticationService(userDao, conf.getAuthenticationConfiguration().getSessionTTL(), clock);
+		return new AuthenticationService(userDao, conf.getAuthenticationConfiguration().getSessionTTLSecs(), clock);
 	}
 	public List<HealthCheck> getHealthCheckers(){
 		return healthCheckers;

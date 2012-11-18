@@ -49,6 +49,7 @@ class HttpTransportClient {
 	private static final int DEFAULT_BUFFER_SIZE = 2048;
 	private final URI uri;
 	private final URL addBatchUri;
+	private final URL authenticateRequestUri;
 	private final String hostname;
 	private final Logger logger;
 	private final NetworkInfoProvider networkInfoProvider;
@@ -57,7 +58,8 @@ class HttpTransportClient {
 	HttpTransportClient(String hostname, Logger logger, NetworkInfoProvider networkInfoProvider, HttpClientFactory httpClientFactory) throws URISyntaxException, MalformedURLException{
 		this.hostname = hostname.trim();
 		this.uri = new URI("http://"+this.hostname);
-		this.addBatchUri = new URL(uri.toString() +"/tracker/batch");
+		this.addBatchUri = new URL(uri.toString() +"/location/batch");
+		this.authenticateRequestUri = new URL(uri.toString()+"/user/");
 		
 		this.logger = logger;
 		this.networkInfoProvider = networkInfoProvider;
@@ -68,11 +70,26 @@ class HttpTransportClient {
 		this(hostname, logger, networkInfoProvider, new DefaultHttpClientFactory());
 	}
 	
-	public String login(String username, String password){
+	public String login(String username, String password) throws AuthenticationException{
 	
 		// create transport object via getJsonPayloadForAuthenicationRequest
-		byte[] object = getJsonPayloadForAuthenicationRequest(password);
+		byte[] authenticationPayload = getJsonPayloadForAuthenicationRequest(password);
 		
+		try{
+			Response response = postJsonData(authenticationPayload, new URL(authenticateRequestUri+username+"/authenticate"));
+			if (isResponseOk(response)){
+				TransportAuthenticationToken token = getTransportAuthenticationToken(response.getContent());
+				
+				String tokenStr = token.getToken();
+				setupToken(tokenStr);
+				
+				return tokenStr;
+			} else{
+				throw new AuthenticationException(username);
+			}
+		} catch (IOException e){
+			throw new AuthenticationException(username, e);
+		}
 		// make call to server with transport object
 		
 		// check status code for errors
@@ -81,10 +98,6 @@ class HttpTransportClient {
 		//i need to create a objcet of TransportAuthenticationToken via getTransportAuthenticationToken
 		
 		// return token from TransportAuthenticationToken
-		String token = "";
-		setupToken(token);
-		
-		return password;
 		
 	}
 	
@@ -92,28 +105,42 @@ class HttpTransportClient {
 		HttpURLConnection connection = httpClientFactory.createHttpConnection(url);
 		try{
 		    connection.setDoInput(true);
+		    connection.setDoOutput(true);
+		    connection.setRequestProperty("Content-Type", "application/json");
+		    connection.setRequestProperty("Accepts", "application/json");
 		    
 		    connection.setFixedLengthStreamingMode(payload.length);
 		    OutputStream out = new BufferedOutputStream(connection.getOutputStream());
 		    out.write(payload);
 		    out.flush();
 		    
-		    InputStream in = new BufferedInputStream(connection.getInputStream());
-		    // check for redirection.
+		    int statusCode = connection.getResponseCode();
+		 // check for redirection.
 		    if (!url.getHost().equals(connection.getURL().getHost())) {
 		    	return new Response(connection.getResponseCode(), new byte[]{});
 		    }
 		    
-		    // now parse stream
+		    byte[] content;
+		    if (isStatusCodeOk(statusCode)){
+			    InputStream in = new BufferedInputStream(connection.getInputStream());
+			   
+			    
+			    // now parse stream
+			    
+			    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+			    
+			    while(in.read(buffer) != -1){
+			    	baos.write(buffer);
+			    }
+			    content = baos.toByteArray();
+			} else{
+				content = new byte[]{};
+			}
 		    
-		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+			    
 		    
-		    while(in.read(buffer) != -1){
-		    	baos.write(buffer);
-		    }
-		    
-		    return new Response(connection.getResponseCode(), baos.toByteArray());
+		    return new Response(connection.getResponseCode(), content);
 		} finally{
 			connection.disconnect();
 		}
@@ -127,10 +154,7 @@ class HttpTransportClient {
 	    try {
 	    	Response response = postJsonData(payload, addBatchUri);
 	    	
-	        if (response.getStatusCode() >= 200 && response.getStatusCode() < 300){ // 2XX code returned
-	        	return true;
-	        }
-	        else {
+	        if (!isResponseOk(response)){
 	        	// we were able to get a code back but the format is incorrect. This is a proper error at the protocol lever.
 	        	logger.error(HttpTransportClient.class, "Unable to send batch for: "+batch+" with payload: "+new String(payload)+": server rejected message");
 	        	return false;
@@ -139,8 +163,18 @@ class HttpTransportClient {
 	    	logger.error(HttpTransportClient.class, "Unable to send batch for: "+batch+" with payload: "+new String(payload)+": "+e.getMessage());
 	        return false;
 	    }
+	    
+	    return true;
 	}
 	
+	private boolean isResponseOk(Response response) {
+		return isStatusCodeOk(response.getStatusCode());
+	}
+	
+	private boolean isStatusCodeOk(int statusCode){
+		return statusCode >= 200 && statusCode < 300; // status code is 2XX
+	}
+
 	private void setupToken(String token) {
 		
 		 CookieManager cookieManager = new CookieManager();
@@ -156,9 +190,11 @@ class HttpTransportClient {
 	private TransportAuthenticationToken getTransportAuthenticationToken(byte[] token){
 		try {
 			JSONObject jsonObject = new JSONObject(new String(token));
-			//jsonObject.get
+			String username = jsonObject.getString(TransportAuthenticationToken.USERNAME_TAG);
+			String signature = jsonObject.getString(TransportAuthenticationToken.SIGNATURE_TAG);
+			long expires = jsonObject.getLong(TransportAuthenticationToken.EXPIRES_TAG);
 			
-			return null;
+			return new TransportAuthenticationToken(username, signature, expires);
 		} catch (JSONException e) {
 			throw new RuntimeException("unable to parse JSON");
 		}

@@ -2,14 +2,14 @@ package uk.ac.sussex.asegr3.tracker.server.services;
 
 import java.util.List;
 
-import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
+import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 
 public class LocationService {
 	
-	private final TrackerDao dao;
+	private final LocationDao dao;
 	
-	public LocationService(TrackerDao dao){
+	public LocationService(LocationDao dao){
 		this.dao = dao;
 	}
 	

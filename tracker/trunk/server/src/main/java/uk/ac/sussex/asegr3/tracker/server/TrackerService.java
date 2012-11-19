@@ -9,7 +9,7 @@ import uk.ac.sussex.asegr3.tracker.security.UserAuthenticator;
 import uk.ac.sussex.asegr3.tracker.server.api.LocationResource;
 import uk.ac.sussex.asegr3.tracker.server.api.UserResource;
 import uk.ac.sussex.asegr3.tracker.server.configuration.TrackerConfiguration;
-import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
+import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.UserDao;
 import uk.ac.sussex.asegr3.tracker.server.healthcheck.DatabaseHealthCheck;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
@@ -39,7 +39,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		
 		// daos
 		Database database = createDatabase(environment, configuration.getDatabaseConfiguration());
-		TrackerDao dao = database.onDemand(TrackerDao.class);
+		LocationDao dao = database.onDemand(LocationDao.class);
 		UserDao userDao = database.onDemand(UserDao.class);
 		
 		//services 

@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
-import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
+import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
@@ -27,7 +27,7 @@ public class TrackerResourceUnitTest {
 	private LocationResource candidate;
 	
 	@Mock
-	private TrackerDao trackerDaoMock;
+	private LocationDao trackerDaoMock;
 	
 	private LoggedInUser loggedInUserMock = new LoggedInUser(TEST_SESSION_EXPIRY, TEST_USERNAME);
 	

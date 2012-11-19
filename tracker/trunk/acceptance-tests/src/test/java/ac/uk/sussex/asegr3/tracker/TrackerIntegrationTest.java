@@ -46,7 +46,7 @@ public class TrackerIntegrationTest {
 	
 	@Test
 	public void givenCredentials_whenCallinglogin_thenExpectedTokenReturned() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("192.168.0.12:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
 		HttpTransportClientApi api = apiFactory.create(TEST_USER_NAME, TEST_PASSWORD);
 		
 		assertThat(api, is(not(nullValue())));
@@ -54,14 +54,14 @@ public class TrackerIntegrationTest {
 	
 	@Test(expected=AuthenticationException.class)
 	public void givenIncorrectCredentials_whenCallinglogin_thenAuthenticationExceptionThrown() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("192.168.0.12:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
 		apiFactory.create(TEST_USER_NAME, TEST_PASSWORD+45);
 
 	}
 	
 	@Test
 	public void givenTestBatch_whenCallingprocessBatch_thenBatchAddedToDb() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("192.168.0.12:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER);
 		HttpTransportClientApi api = apiFactory.create(TEST_USER_NAME, TEST_PASSWORD);
 		
 		List<LocationDto> testLocations = new ArrayList<LocationDto>();

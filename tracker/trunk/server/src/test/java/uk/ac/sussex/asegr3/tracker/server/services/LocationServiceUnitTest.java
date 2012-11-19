@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import uk.ac.sussex.asegr3.tracker.server.dao.TrackerDao;
+import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 
@@ -25,7 +25,7 @@ public class LocationServiceUnitTest {
 	private LocationService candidate;
 	
 	@Mock
-	private TrackerDao locationDaoMock;
+	private LocationDao locationDaoMock;
 	
 	private LocationDTO location;
 	

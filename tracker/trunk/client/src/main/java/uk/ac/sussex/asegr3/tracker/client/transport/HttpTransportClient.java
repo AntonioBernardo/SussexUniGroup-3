@@ -85,7 +85,7 @@ class HttpTransportClient {
 				
 				return tokenStr;
 			} else{
-				throw new AuthenticationException(username);
+				throw new AuthenticationException(username, response.getStatusCode());
 			}
 		} catch (IOException e){
 			throw new AuthenticationException(username, e);

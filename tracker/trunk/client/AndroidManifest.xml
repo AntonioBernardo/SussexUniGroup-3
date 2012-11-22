@@ -18,7 +18,7 @@
         <uses-library android:name="com.google.android.maps" />
 
         <activity
-            android:name="uk.ac.sussex.asegr3.tracker.client.ui.TrackingActivity"
+            android:name="uk.ac.sussex.asegr3.tracker.client.ui.UiLogin"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,6 +26,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+    
+    	 <activity android:name=".TrackingActivity"></activity>
+        <activity android:name=".UiRegister"></activity>
+        <activity android:name=".UiLoading"></activity>
+        <activity android:name=".UiError"></activity>
+        
     </application>
     
 	<instrumentation

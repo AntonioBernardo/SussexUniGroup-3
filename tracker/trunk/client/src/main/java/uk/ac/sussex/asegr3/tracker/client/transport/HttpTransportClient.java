@@ -18,10 +18,13 @@ import uk.ac.sussex.asegr3.tracker.client.location.BatchLocationConsumer;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
+import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationRequest;
+import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 
-public class HttpTransportClient implements BatchLocationConsumer{
+class HttpTransportClient {
+	
 	
 	private final String url;
 	private final Logger logger;
@@ -29,7 +32,7 @@ public class HttpTransportClient implements BatchLocationConsumer{
 	private final HttpClientFactory httpClientFactory;
 	
 	HttpTransportClient(String hostname, Logger logger, NetworkInfoProvider networkInfoProvider, HttpClientFactory httpClientFactory){
-		this.url = "http://"+hostname.trim()+"/tracker/batch";
+		this.url = "http://"+hostname.trim();
 		this.logger = logger;
 		this.networkInfoProvider = networkInfoProvider;
 		this.httpClientFactory = httpClientFactory;
@@ -38,14 +41,34 @@ public class HttpTransportClient implements BatchLocationConsumer{
 	public HttpTransportClient(String hostname, Logger logger, NetworkInfoProvider networkInfoProvider){
 		this(hostname, logger, networkInfoProvider, new DefaultHttpClientFactory());
 	}
+	
+	public String login(String username, String password){
+	
+		// create transport object via getJsonPayloadForAuthenicationRequest
+		byte[] object = getJsonPayloadForAuthenicationRequest(password);
+		
+		// make call to server with transport object
+		 HttpPost httppost = new HttpPost(url+"/tracker/batch");
+		
+		// check status code for errors
+		// need to call the class responseble to check
+		
+		//i need to create a objcet of TransportAuthenticationToken via getTransportAuthenticationToken
+		
+		// return token from TransportAuthenticationToken
+		
+		
+		return password;
+		
+	}
 
-	@Override
-	public boolean processBatch(LocationBatch batch) {
+	public boolean processBatch(String token, LocationBatch batch) {
 		// Create a new HttpClient and Post Header
 	    HttpClient httpclient = httpClientFactory.createHttpClient();
-	    HttpPost httppost = new HttpPost(url);
+	    HttpPost httppost = new HttpPost(url+"/tracker/batch");
+	    setupToken(token, httppost);
 
-	    byte[] payload = getJsonPayload(batch);
+	    byte[] payload = getJsonPayloadForLocationBatch(batch);
 	    try {
 	        // Add your data
 	    	
@@ -58,6 +81,8 @@ public class HttpTransportClient implements BatchLocationConsumer{
 	        HttpResponse response = httpclient.execute(httppost);
 	        if (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300){ // 2XX code returned
 	        	return true;
+	        	
+	        	
 	        }
 	        else {
 	        	// we were able to get a code back but the format is incorrect. This is a proper error at the protocol lever.
@@ -72,8 +97,37 @@ public class HttpTransportClient implements BatchLocationConsumer{
 	        return false;
 	    }
 	}
+	
+	private void setupToken(String token, HttpPost httppost) {
+		// attach token to http post.
+	}
 
-	private byte[] getJsonPayload(LocationBatch batch) {
+	private TransportAuthenticationToken getTransportAuthenticationToken(byte[] token){
+		try {
+			JSONObject jsonObject = new JSONObject(new String(token));
+			//jsonObject.get
+			
+			return null;
+		} catch (JSONException e) {
+			throw new RuntimeException("unable to parse JSON");
+		}
+		
+	}
+	
+	private byte[] getJsonPayloadForAuthenicationRequest(String password){
+		// return json byte for TransportAuthenicationRequest
+		
+		JSONObject jsonObject = new JSONObject();
+		try{
+			jsonObject.put(TransportAuthenticationRequest.PASSWORD_TAG, password);
+		} catch (JSONException e){
+			throw new RuntimeException("Unable to build JSON", e);
+		}
+		
+		return jsonObject.toString().getBytes();
+	}
+
+	private byte[] getJsonPayloadForLocationBatch(LocationBatch batch) {
 		JSONObject jsonObject = new JSONObject();
 		JSONArray locationsArray = new JSONArray();
 		try{
@@ -87,13 +141,12 @@ public class HttpTransportClient implements BatchLocationConsumer{
 			
 			jsonObject.put(TransportLocationBatch.LOCATIONS_TAG, locationsArray);
 		} catch (JSONException e){
-			throw new RuntimeException("unable to parse batch: "+batch+" to JSON", e);
+			throw new RuntimeException("unable to build batch: "+batch+" to JSON", e);
 		}
 		
 		return jsonObject.toString().getBytes();
 	}
 
-	@Override
 	public boolean isReady() {
 		return networkInfoProvider.getNetworkInfo().isAvailable();
 	}

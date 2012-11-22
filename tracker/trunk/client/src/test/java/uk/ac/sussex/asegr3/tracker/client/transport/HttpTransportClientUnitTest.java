@@ -48,6 +48,8 @@ public class HttpTransportClientUnitTest {
 	private static final String EXPECTED_SINGLE_LOCATION_JSON_CONTENT = "{\"locations\":[{\"timestamp\":1351874788222,\"lattitude\":45.657,\"longitude\":85.623}]}";
 
 	private static final Object EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT = "{\"locations\":[{\"timestamp\":1351874788222,\"lattitude\":45.657,\"longitude\":85.623},{\"timestamp\":1351874789222,\"lattitude\":50.657,\"longitude\":79.623}]}";
+
+	private static final String TEST_TOKEN = "testToken";
 	
 	@Mock
 	private Logger loggerMock;
@@ -88,7 +90,7 @@ public class HttpTransportClientUnitTest {
 	public void givenSingleEntryBatch_whenCallingProcessBatch_httpClientInvokedCorrectly() throws ClientProtocolException, IOException{
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME)), 0);
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(true)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpClient();
 		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
@@ -111,7 +113,7 @@ public class HttpTransportClientUnitTest {
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(true)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpClient();
 		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
@@ -136,7 +138,7 @@ public class HttpTransportClientUnitTest {
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(true)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpClient();
 		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
@@ -161,7 +163,7 @@ public class HttpTransportClientUnitTest {
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(false)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
 	}
 	
 	@Test
@@ -171,7 +173,7 @@ public class HttpTransportClientUnitTest {
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
 		when(httpClientMock.execute(any(HttpPost.class))).thenThrow(new IOException());
 		
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(false)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
 	}
 	
 	@Test
@@ -181,7 +183,7 @@ public class HttpTransportClientUnitTest {
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
 		when(httpClientMock.execute(any(HttpPost.class))).thenThrow(new ClientProtocolException());
 		
-		assertThat(candidate.processBatch(singleBatch), is(equalTo(false)));
+		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
 	}
 	
 	@Test

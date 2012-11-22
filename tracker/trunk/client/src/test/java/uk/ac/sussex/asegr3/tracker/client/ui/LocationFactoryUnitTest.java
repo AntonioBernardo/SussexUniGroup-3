@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
+import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 
 import android.app.Activity;
@@ -41,6 +42,9 @@ public class LocationFactoryUnitTest {
 	@Mock
 	private Executor executorMock;
 	
+	@Mock
+	private HttpTransportClientApi apiMock;
+	
 	@Before
 	public void before(){
 		this.candidate = new LocationServiceFactory();
@@ -49,7 +53,7 @@ public class LocationFactoryUnitTest {
 	
 	@Test
 	public void givenLocationFactory_whenCallingCreate_newLocationFactoryReturned(){
-		LocationService returnedService = candidate.create(activityMock, mapViewProviderMock, loggerMock, executorMock);
+		LocationService returnedService = candidate.create(activityMock, apiMock, mapViewProviderMock, loggerMock, executorMock);
 		
 		assertThat(returnedService, is(not(nullValue())));
 	}

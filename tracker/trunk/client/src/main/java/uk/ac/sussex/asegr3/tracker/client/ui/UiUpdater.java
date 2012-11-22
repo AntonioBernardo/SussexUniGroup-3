@@ -14,6 +14,7 @@ public class UiUpdater implements LocationUpdateListener {
 	
 	public UiUpdater(MapViewProvider mapViewProvider){
 		this.mapViewProvider = mapViewProvider;
+		
 	}
 
 	@Override
@@ -29,17 +30,7 @@ public class UiUpdater implements LocationUpdateListener {
 			          1000000).show();
 			      
 		   mapView.refreshDrawableState();
-		   
-		   //add marker
-//		   MapOverlay mapOverlay = new MapOverlay();
-//		      mapOverlay.setPointToDraw(point);
-//		      List<Overlay> listOfOverlays = mapView.getOverlays();
-//		      listOfOverlays.clear();
-//		      listOfOverlays.add(mapOverlay);
-//		      
-//		      String address = ConvertPointToLocation(point);
-//		      Toast.makeText(getBaseContext(), address, Toast.LENGTH_SHORT).show();
-		   
+		  
 	}
 
 	private Context getBaseContext() {

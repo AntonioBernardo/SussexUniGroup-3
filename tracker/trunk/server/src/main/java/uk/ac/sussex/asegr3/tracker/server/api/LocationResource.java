@@ -7,14 +7,17 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.yammer.dropwizard.auth.Auth;
 
 import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
+import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
+import uk.ac.sussex.asegr3.transport.beans.TransportComment;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
@@ -37,7 +40,7 @@ public class LocationResource {
 		LocationDTO locationDetails=
 				new LocationDTO(user.getUsername(), location.getLattitude(), location.getLongitude(), location.getTimestamp());
 		
-		locationService.storeLocation(locationDetails);
+		locationService.storeLocation(user.getUsername(), locationDetails);
 		
 	}
 	
@@ -54,7 +57,15 @@ public class LocationResource {
 			locations.add(locationDetails);
 		}
 		
-		locationService.storeLocations(locations);
+		locationService.storeLocations(user.getUsername(), locations);
+	}
+	
+	@POST
+	@Path("/${locationId}/comment")
+	public void addComment(@PathParam("locationId") int locationId, TransportComment transportComment){
+		CommentDTO commentDTO = new CommentDTO(transportComment.getText(), locationId, transportComment.getImage());
+		
+		locationService.addComment(commentDTO);
 	}
 	
 	@GET

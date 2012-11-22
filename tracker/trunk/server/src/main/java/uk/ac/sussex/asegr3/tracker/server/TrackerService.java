@@ -6,6 +6,7 @@ import java.util.List;
 import uk.ac.sussex.asegr3.tracker.security.CookieSigAuthProvider;
 import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
 import uk.ac.sussex.asegr3.tracker.security.UserAuthenticator;
+import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.api.LocationResource;
 import uk.ac.sussex.asegr3.tracker.server.api.UserResource;
 import uk.ac.sussex.asegr3.tracker.server.configuration.TrackerConfiguration;
@@ -39,8 +40,9 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		
 		// daos
 		Database database = createDatabase(environment, configuration.getDatabaseConfiguration());
-		LocationDao dao = database.onDemand(LocationDao.class);
+		LocationDao locationDao = database.onDemand(LocationDao.class);
 		UserDao userDao = database.onDemand(UserDao.class);
+		CommentDao commentDao = database.onDemand(CommentDao.class);
 		
 		//services 
 		
@@ -49,9 +51,8 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		// health checks
 		addHealthCheck(environment, new DatabaseHealthCheck(database));
 		
-		
 		// resources
-		environment.addResource(new LocationResource(new LocationService(dao)));
+		environment.addResource(new LocationResource(new LocationService(locationDao,commentDao)));
 		environment.addResource(new UserResource(authService));
 		environment.enableJerseyFeature(ResourceConfig.FEATURE_TRACE);
 		

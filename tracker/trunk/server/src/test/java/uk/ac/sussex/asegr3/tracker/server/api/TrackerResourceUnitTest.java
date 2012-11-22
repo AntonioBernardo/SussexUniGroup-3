@@ -46,7 +46,7 @@ public class TrackerResourceUnitTest {
 	public void givenValidLocation_whenCallingAddLocation_thenAppropriateServiceCalled(){
 		candidate.addLocation(loggedInUserMock, new TransportLocation(1.0, 2.0, 45678));
 		candidate.addLocations(loggedInUserMock, locBatch);
-		verify(trackerDaoMock, times(1)).insert(1, 1.0, 2.0, 45678);
-		verify(trackerDaoMock, times(1)).insert(1, 0.0, 1.0, 1234567890);
+		verify(trackerDaoMock, times(1)).insert(TEST_USERNAME, 1.0, 2.0, 45678);
+		verify(trackerDaoMock, times(1)).insert(TEST_USERNAME, 0.0, 1.0, 1234567890);
 	}
 }

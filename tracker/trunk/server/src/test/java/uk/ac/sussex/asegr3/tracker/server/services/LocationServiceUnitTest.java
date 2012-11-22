@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
@@ -22,6 +23,8 @@ import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 @RunWith(MockitoJUnitRunner.class)
 public class LocationServiceUnitTest {
 	
+	private static final String TEST_USERNAME = "testUser";
+
 	private LocationService candidate;
 	
 	@Mock
@@ -33,14 +36,14 @@ public class LocationServiceUnitTest {
 	public void before(){
 		
 		candidate=new LocationService(locationDaoMock);
-		location=new LocationDTO(0.0, 1.0, 45678);
+		location=new LocationDTO(TEST_USERNAME, 0.0, 1.0, 45678);
 	}
 	
 	@Test
 	public void givenValidLocation_ThenStored(){
 		candidate.storeLocation(location);
 		
-		verify(locationDaoMock, times(1)).insert(1, 0.0, 1.0, 45678);
+		verify(locationDaoMock, times(1)).insert(TEST_USERNAME, 0.0, 1.0, 45678);
 		
 	}
 	
@@ -48,7 +51,7 @@ public class LocationServiceUnitTest {
 	public void givenValidLocations_ThenStored(){
 		candidate.storeLocations(Arrays.asList(location, location));
 		
-		verify(locationDaoMock, times(2)).insert(1, 0.0, 1.0, 45678);
+		verify(locationDaoMock, times(2)).insert(TEST_USERNAME, 0.0, 1.0, 45678);
 		
 	}
 	
@@ -56,7 +59,7 @@ public class LocationServiceUnitTest {
 	public void givenNoLocations_ThenStored(){
 		candidate.storeLocations(null);
 		
-		verify(locationDaoMock, never()).insert(anyInt(), anyDouble(), anyDouble(), anyLong());
+		verify(locationDaoMock, never()).insert(anyString(), anyDouble(), anyDouble(), anyLong());
 		
 	}
 

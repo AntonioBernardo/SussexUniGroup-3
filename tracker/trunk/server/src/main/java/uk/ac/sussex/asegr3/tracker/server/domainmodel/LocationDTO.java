@@ -2,17 +2,17 @@ package uk.ac.sussex.asegr3.tracker.server.domainmodel;
 
 public class LocationDTO {
 	
-	
+	private String username;
 	private double latitude;
 	private double longitude;
 	private long timeStamp;
 	
 	
-	public LocationDTO(double latitude, double longitude, long timeStamp){
+	public LocationDTO(String username,double latitude, double longitude, long timeStamp){
 		this.setLatitude(latitude);
 		this.setLongitude(longitude);
 		this.setTimeStamp(timeStamp);
-		
+		this.setUsername(username);
 	}
 
 
@@ -43,6 +43,16 @@ public class LocationDTO {
 
 	public void setTimeStamp(long timeStamp) {
 		this.timeStamp = timeStamp;
+	}
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	
 	

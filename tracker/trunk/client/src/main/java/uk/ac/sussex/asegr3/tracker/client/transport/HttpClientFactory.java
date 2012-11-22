@@ -1,8 +1,11 @@
 package uk.ac.sussex.asegr3.tracker.client.transport;
 
-import org.apache.http.client.HttpClient;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-public interface HttpClientFactory {
+public interface HttpClientFactory extends Serializable{
 
-	HttpClient createHttpClient();
+	HttpURLConnection createHttpConnection(URL uri) throws IOException;
 }

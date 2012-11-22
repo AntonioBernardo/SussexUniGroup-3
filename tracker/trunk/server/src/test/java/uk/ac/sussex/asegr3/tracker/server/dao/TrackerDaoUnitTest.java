@@ -30,9 +30,9 @@ public class TrackerDaoUnitTest {
 	private static final double TEST_LAT = 85.3453;
 	private static final double TEST_LONG = 98453.5646432;
 	private static final long TEST_TIMESTAMP = 34578345723L;
-	private static final String EXPECTED_SQL = "insert into location (user_id, latitude, longitude, timestamp) values (?, ?, ?, ?)";
+	private static final String EXPECTED_SQL = "insert into location (fk_user_id, latitude, longitude, timestamp_added) values (?, ?, ?, ?)";
 
-	private TrackerDao candidate;
+	private LocationDao candidate;
 	
 	@Mock
 	private DataSource datasourceMock;
@@ -57,7 +57,7 @@ public class TrackerDaoUnitTest {
 		when(connectionMock.createStatement()).thenReturn(statementMock);
 		when(connectionMock.prepareStatement(any(String.class))).thenReturn(preparedStatementMock);
 		
-		this.candidate = dbi.onDemand(TrackerDao.class);
+		this.candidate = dbi.onDemand(LocationDao.class);
 	}
 	
 	@Test

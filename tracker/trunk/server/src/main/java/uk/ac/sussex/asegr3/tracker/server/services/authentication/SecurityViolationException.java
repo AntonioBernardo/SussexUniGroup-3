@@ -1,10 +1,12 @@
 package uk.ac.sussex.asegr3.tracker.server.services.authentication;
 
-public class SecurityViolationException extends RuntimeException {
+public class SecurityViolationException extends Exception {
 
 	public static enum Type {
 		PASSWORD_MISMATCH, 
-		SIGNATURE_GENERATION
+		SIGNATURE_GENERATION, 
+		USER_NOT_FOUND, 
+		INVALID_SIGNATURE
 	}
 	public SecurityViolationException(Type type){
 		super(type.toString());

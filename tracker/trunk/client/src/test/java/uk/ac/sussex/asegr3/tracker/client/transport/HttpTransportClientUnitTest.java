@@ -1,23 +1,23 @@
 package uk.ac.sussex.asegr3.tracker.client.transport;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import android.net.NetworkInfo;
 
@@ -25,6 +25,7 @@ import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
+import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -49,7 +50,15 @@ public class HttpTransportClientUnitTest {
 
 	private static final Object EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT = "{\"locations\":[{\"timestamp\":1351874788222,\"lattitude\":45.657,\"longitude\":85.623},{\"timestamp\":1351874789222,\"lattitude\":50.657,\"longitude\":79.623}]}";
 
-	private static final String TEST_TOKEN = "testToken";
+	private static final String TEST_TOKEN = "dGVzdFVzZXI=_1234567_YWJjZDEyMzQ=";
+
+	private static final String TEST_USERNAME = "testUser";
+
+	private static final String TEST_PASSWORD = "testPassword";
+
+	private static final String EXPECTED_AUTH_REQUEST = "{\"password\":\"testPassword\"}";
+
+	private static final String TEST_SUC_AUTH_RESPONSE = "{\"username\":\"testUser\", \"signature\":\"abcd1234\", \"expires\"=\"1234567\"}";
 	
 	@Mock
 	private Logger loggerMock;
@@ -64,26 +73,57 @@ public class HttpTransportClientUnitTest {
 	private HttpClientFactory httpClientFactoryMock;
 	
 	@Mock
-	private HttpClient httpClientMock;
+	private HttpURLConnection httpConnectionMock;
 	
-	@Mock
-	private HttpResponse httpResponseMock;
 	
-	@Mock
-	private StatusLine statusLineMock;
+	private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+	
+	private ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(new byte[]{});
 	
 	private HttpTransportClient candidate;
 	
 	@Before
-	public void before() throws ClientProtocolException, IOException{
-		candidate = new HttpTransportClient(TEST_HOSTNAME, loggerMock, networkInfoProviderMock, httpClientFactoryMock);
-		when(httpClientFactoryMock.createHttpClient()).thenReturn(httpClientMock);
-		when(httpClientMock.execute(any(HttpPost.class))).thenReturn(httpResponseMock);
+	public void before() throws ClientProtocolException, IOException, URISyntaxException{
+		candidate = new HttpTransportClient(TEST_HOSTNAME, loggerMock, networkInfoProviderMock, httpClientFactoryMock, new Base64Encoder(){
+
+			@Override
+			public String encode(byte[] bytes) {
+				return Base64.encodeBase64String(bytes);
+			}
+			
+		});
+		final ArgumentCaptor<URL> requestedUrl = ArgumentCaptor.forClass(URL.class);
+		when(httpClientFactoryMock.createHttpConnection(requestedUrl.capture())).thenReturn(httpConnectionMock);
+		when(httpConnectionMock.getURL()).thenAnswer(new Answer<URL>(){
+
+			@Override
+			public URL answer(InvocationOnMock invocation) throws Throwable {
+				return requestedUrl.getValue();
+			}
+			
+		});
+		when(httpConnectionMock.getOutputStream()).thenReturn(byteArrayOutputStream);
+		when(httpConnectionMock.getInputStream()).thenReturn(byteArrayInputStream);
 		
-		when(httpResponseMock.getStatusLine()).thenReturn(statusLineMock);
-		when(statusLineMock.getStatusCode()).thenReturn(200);
+		when(httpConnectionMock.getResponseCode()).thenReturn(200);
 		
 		when(networkInfoProviderMock.getNetworkInfo()).thenReturn(networkInfoMock);
+	}
+	
+	@Test
+	public void givenCorrectLoginCredentials_whenCallingLogin_thenReturnCorrectToken() throws AuthenticationException, IOException{
+		byteArrayInputStream = new ByteArrayInputStream(TEST_SUC_AUTH_RESPONSE.getBytes());
+		when(httpConnectionMock.getInputStream()).thenReturn(byteArrayInputStream);
+		
+		String token = candidate.login(TEST_USERNAME, TEST_PASSWORD);
+		
+		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
+		
+		String sentJsonContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
+		
+		assertThat(sentJsonContent, is(equalTo(EXPECTED_AUTH_REQUEST)));
+		
+		assertThat(token, is(equalTo(TEST_TOKEN)));
 	}
 	
 	@Test
@@ -92,20 +132,11 @@ public class HttpTransportClientUnitTest {
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME)), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
-		verify(httpClientFactoryMock, times(1)).createHttpClient();
-		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
-		verify(httpClientMock, times(1)).execute(captor.capture());
+		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
 		
-		HttpPost capturedPost = captor.getValue();
+		String sentJsonContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
 		
-		assertThat(capturedPost.getHeaders("Content-type")[0].getValue(), is(equalTo("application/json")));
-		assertThat(capturedPost.getHeaders("Accept")[0].getValue(), is(equalTo("application/json")));
-		
-		HttpEntity entity = capturedPost.getEntity();
-		
-		String jsonContent = new String(IOUtils.toByteArray(entity.getContent()));
-		
-		assertThat(jsonContent, is(equalTo(EXPECTED_SINGLE_LOCATION_JSON_CONTENT)));
+		assertThat(sentJsonContent, is(equalTo(EXPECTED_SINGLE_LOCATION_JSON_CONTENT)));
 	}
 	
 	@Test
@@ -115,51 +146,34 @@ public class HttpTransportClientUnitTest {
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
-		verify(httpClientFactoryMock, times(1)).createHttpClient();
-		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
-		verify(httpClientMock, times(1)).execute(captor.capture());
+		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
 		
-		HttpPost capturedPost = captor.getValue();
+		String sentJsonContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
 		
-		assertThat(capturedPost.getHeaders("Content-type")[0].getValue(), is(equalTo("application/json")));
-		assertThat(capturedPost.getHeaders("Accept")[0].getValue(), is(equalTo("application/json")));
+		assertThat(sentJsonContent, is(equalTo(EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT)));
 		
-		HttpEntity entity = capturedPost.getEntity();
-		
-		String jsonContent = new String(IOUtils.toByteArray(entity.getContent()));
-		
-		assertThat(jsonContent, is(equalTo(EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT)));
 	}
 	
 	@Test
 	public void givenMultipleEntryBatchAnd204StatusCode_whenCallingProcessBatch_httpClientInvokedCorrectly() throws ClientProtocolException, IOException{
 		
-		when(statusLineMock.getStatusCode()).thenReturn(204);
+		when(httpConnectionMock.getResponseCode()).thenReturn(204);
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
-		verify(httpClientFactoryMock, times(1)).createHttpClient();
-		ArgumentCaptor<HttpPost> captor = ArgumentCaptor.forClass(HttpPost.class);
-		verify(httpClientMock, times(1)).execute(captor.capture());
+		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
 		
-		HttpPost capturedPost = captor.getValue();
+		String sentJsonContent = new String(byteArrayOutputStream.toByteArray(), "UTF-8");
 		
-		assertThat(capturedPost.getHeaders("Content-type")[0].getValue(), is(equalTo("application/json")));
-		assertThat(capturedPost.getHeaders("Accept")[0].getValue(), is(equalTo("application/json")));
-		
-		HttpEntity entity = capturedPost.getEntity();
-		
-		String jsonContent = new String(IOUtils.toByteArray(entity.getContent()));
-		
-		assertThat(jsonContent, is(equalTo(EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT)));
+		assertThat(sentJsonContent, is(equalTo(EXPECTED_MULTIPLE_LOCATION_JSON_CONTENT)));
 	}
 	
 	@Test
 	public void givenMultipleEntryBatchAnd500StatusCode_whenCallingProcessBatch_thenResultIsFalse() throws ClientProtocolException, IOException{
 		
-		when(statusLineMock.getStatusCode()).thenReturn(500);
+		when(httpConnectionMock.getResponseCode()).thenReturn(500);
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
@@ -171,17 +185,8 @@ public class HttpTransportClientUnitTest {
 		
 		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
 																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
-		when(httpClientMock.execute(any(HttpPost.class))).thenThrow(new IOException());
 		
-		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
-	}
-	
-	@Test
-	public void givenMultipleEntryBatchAndClientProtocolException_whenCallingProcessBatch_thenResultIsFalse() throws ClientProtocolException, IOException{
-		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
-																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
-		when(httpClientMock.execute(any(HttpPost.class))).thenThrow(new ClientProtocolException());
+		when(httpConnectionMock.getInputStream()).thenThrow(new IOException());
 		
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
 	}

@@ -1,6 +1,8 @@
 package uk.ac.sussex.asegr3.tracker.client.util;
 
-public interface Logger {
+import java.io.Serializable;
+
+public interface Logger extends Serializable{
 
 	void debug(Class<?> className, String message);
 	

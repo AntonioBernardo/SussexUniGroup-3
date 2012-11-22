@@ -5,10 +5,16 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.ac.sussex.asegr3.tracker.server.services.authentication.AuthenticationService;
 import uk.ac.sussex.asegr3.tracker.server.services.authentication.AuthenticationToken;
+import uk.ac.sussex.asegr3.tracker.server.services.authentication.SecurityViolationException;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationRequest;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
 
@@ -18,6 +24,7 @@ import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
 public class UserResource {
 	
 	private final AuthenticationService authenticationService;
+	private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 	
 	public UserResource(AuthenticationService authenticationService){
 		this.authenticationService = authenticationService;
@@ -28,10 +35,17 @@ public class UserResource {
 	
 	}
 	
-	@Path("/${username}/authenticate")
+	@Path("/{username}/authenticate")
+	@POST
 	public TransportAuthenticationToken authenticateUser(@PathParam("username") String username, TransportAuthenticationRequest request){
-		AuthenticationToken token = authenticationService.authenticateUser(username, request.getPassword());
+		LOG.debug("authenticating user: "+username);
+		try{
+			AuthenticationToken token = authenticationService.authenticateUser(username, request.getPassword());
 		
-		return new TransportAuthenticationToken(token.getUsername(), token.getSignature(), token.getExpires());
+			return new TransportAuthenticationToken(token.getUsername(), token.getSignature(), token.getExpires());
+		} catch (SecurityViolationException e){
+			throw new WebApplicationException(Response.status(Response.Status.FORBIDDEN)
+											  .build());
+		}
 	}
 }

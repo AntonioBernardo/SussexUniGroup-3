@@ -1,6 +1,8 @@
 package uk.ac.sussex.asegr3.tracker.client.ui;
 
+
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
+import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,7 +17,6 @@ import com.google.android.maps.MapView;
 public class TrackingActivity extends MapActivity implements MapViewProvider {
 
 	public static final String API = "TrackingActivity_api_key";
-	private static final int PERMISSION_GRANTED = 1;
 
 	/**
 	 * Called when the activity is first created.
@@ -35,18 +36,13 @@ public class TrackingActivity extends MapActivity implements MapViewProvider {
 		mapView.setBuiltInZoomControls(true);
 		// enable Street view by default
 
-		DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
-		Intent trackingIntent = getIntent();
-
-		Intent i = getIntent();
-
-		HttpTransportClientApi api = (HttpTransportClientApi) trackingIntent.getSerializableExtra(API);
+		HttpTransportClientApi api = HttpTransportClientApiFactory.getCurrentApi();
 
 		new LocationServiceFactory().create(
 				this, api, this, AndroidLogger.INSTANCE,
 				AsyncTask.SERIAL_EXECUTOR);
 
-		Button next = (Button) findViewById(R.id.button1);
+		Button next = (Button) findViewById(R.id.button);
 
 		next.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {

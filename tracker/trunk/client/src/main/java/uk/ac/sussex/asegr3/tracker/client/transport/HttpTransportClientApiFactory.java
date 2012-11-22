@@ -1,51 +1,63 @@
 package uk.ac.sussex.asegr3.tracker.client.transport;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
-import uk.ac.sussex.asegr3.tracker.client.location.BatchLocationConsumer;
-import uk.ac.sussex.asegr3.tracker.client.location.BatchLocationConsumerProvider;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
+import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 
-public class HttpTransportClientApiFactory implements BatchLocationConsumerProvider, Serializable{
+public class HttpTransportClientApiFactory implements Serializable{
 	
 	private final HttpTransportClient client;
-	private HttpTransportClientApi currentApi;
+	private static HttpTransportClientApi CURRENT_API;
 	
-	public static HttpTransportClientApiFactory create(String hostname, Logger logger, NetworkInfoProvider networkInfoProvider){
-		return new HttpTransportClientApiFactory(new HttpTransportClient(hostname, logger, networkInfoProvider));
+	public static HttpTransportClientApiFactory create(String hostname, Logger logger, NetworkInfoProvider networkInfoProvider, Base64Encoder encoder) throws MalformedURLException, URISyntaxException{
+		return new HttpTransportClientApiFactory(new HttpTransportClient(hostname, logger, networkInfoProvider, encoder));
 	}
 	
 	public HttpTransportClientApiFactory(HttpTransportClient client){
 		this.client = client;
 	}
 
-	public HttpTransportClientApi create(String username, String password){
+
+	public HttpTransportClientApi create(String username, String password) throws AuthenticationException{
+
 		final String token = client.login(username, password);
 		
-		currentApi =  new HttpTransportClientApi(){
-
-			@Override
-			public boolean processBatch(LocationBatch batch) {
-
-				return client.processBatch(token, batch);
-			}
-
-			@Override
-			public boolean isReady() {
-				return client.isReady();
-			}
+		CURRENT_API =  new TokenBasedHttpTransportClientApi(client, token);
 			
-		};
-		return currentApi;
+		return CURRENT_API;
 	}
+	
+	public static HttpTransportClientApi getCurrentApi(){
+		return CURRENT_API;
+	}
+	
+	private static class TokenBasedHttpTransportClientApi implements HttpTransportClientApi, Serializable{
 
-	@Override
-	public BatchLocationConsumer getBatchLocationConsumer() {
-		if (currentApi == null){
-			throw new IllegalStateException("We do not have a authenticated api availanle. Please login");
+		private final HttpTransportClient client;
+		private final String token;
+		
+		private TokenBasedHttpTransportClientApi(HttpTransportClient client, String token){
+			this.client = client;
+			this.token = token;
 		}
-		return currentApi;
+		@Override
+		public boolean processBatch(LocationBatch batch) {
+
+			return client.processBatch(token, batch);
+		}
+
+		@Override
+		public boolean isReady() {
+			return client.isReady();
+		}
+		
 	}
 }

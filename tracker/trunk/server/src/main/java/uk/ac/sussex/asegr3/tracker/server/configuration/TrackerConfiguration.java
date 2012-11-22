@@ -15,7 +15,16 @@ public class TrackerConfiguration extends Configuration{
     @JsonProperty
 	private DatabaseConfiguration database = new DatabaseConfiguration();
 	
+	@Valid
+    @NotNull
+    @JsonProperty
+	private AuthenticationConfiguration authentication = new AuthenticationConfiguration();
+	
 	public DatabaseConfiguration getDatabaseConfiguration(){
 		return database;
+	}
+	
+	public AuthenticationConfiguration getAuthenticationConfiguration(){
+		return authentication;
 	}
 }

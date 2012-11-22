@@ -9,20 +9,18 @@ import org.apache.commons.codec.binary.Base64;
 
 @XmlRootElement
 public class TransportAuthenticationToken {
+	
+	public static final String AUTHENTICATION_SIGNATURE_COOKIE_NAME = "__uk.ac.sussex.asegr3.tracker.AUTH";
 
-	private static final String USERNAME_TAG = "username";
-
-	private static final String SIGNATURE_TAG = "sig";
-
-	private static final String EXPIRATION_TAG = "expiry";
+	public static final String USERNAME_TAG = "username";
+	public static final String SIGNATURE_TAG = "signature";
+	public static final String EXPIRES_TAG = "expires";
 
 	@XmlElement(name=USERNAME_TAG, required=true)
 	private String username;
-	
 	@XmlElement(name=SIGNATURE_TAG, required=true)
 	private String signature;
-	
-	@XmlElement(name=EXPIRATION_TAG, required=true)
+	@XmlElement(name=EXPIRES_TAG, required=true)
 	private long expires;
 	
 	public TransportAuthenticationToken(){
@@ -59,14 +57,21 @@ public class TransportAuthenticationToken {
 		this.expires = expires;
 	}
 	
-	public String getToken(){
-		String base64EncodedUserName = Base64.encodeBase64String(getUsername().getBytes(Charset.forName("UTF-8")));
-		String base64EncodedSignature = Base64.encodeBase64String(getSignature().getBytes(Charset.forName("UTF-8")));
+	public String getToken(Base64Encoder encoder){
+		String base64EncodedUserName = encoder.encode(getUsername().getBytes(Charset.forName("UTF-8")));
+		String base64EncodedSignature = encoder.encode(getSignature().getBytes(Charset.forName("UTF-8")));
 		return base64EncodedUserName+"_"+getExpires()+"_"+base64EncodedSignature;
 	}
 	
 	public String toString(){
-		return getToken();
+		return getToken(new Base64Encoder(){
+
+			@Override
+			public String encode(byte[] bytes) {
+				return Base64.encodeBase64String(bytes);
+			}
+			
+		});
 	}
 	
 	public static TransportAuthenticationToken createAuthenticationTokenFromString(String token){
@@ -82,5 +87,24 @@ public class TransportAuthenticationToken {
 		
 		return new TransportAuthenticationToken(username, signature, expires);
 	}
+
+	@Override
+	public int hashCode() {
+		return this.getUsername().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof TransportAuthenticationToken){
+			TransportAuthenticationToken other = (TransportAuthenticationToken)obj;
+			
+			return this.getUsername().equals(other.getUsername()) &&
+					this.getSignature().equals(other.getSignature()) &&
+					this.getExpires() == other.getExpires();
+		}
+		
+		return false;
+	}
+	
 	
 }

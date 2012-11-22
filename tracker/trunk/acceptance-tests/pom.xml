@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acceptance-tests</artifactId>
+    <packaging>jar</packaging>
+    <name>Tracker - Acceptance tests</name>
+    <parent>
+		<groupId>uk.ac.sussex.asegr3</groupId>
+		<artifactId>tracker-parent</artifactId>
+		<version>0.0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <platform.version>4.1.2_r3</platform.version>
+		<dropwizard.version>0.5.1</dropwizard.version>
+		<mysql-connector.version>5.1.21</mysql-connector.version>
+		<resource.directory>${project.build.directory}/server-resources</resource.directory>
+		<sql.directory>${resource.directory}/sql</sql.directory>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>server</artifactId>
+			<version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>server</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>tests</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>client</artifactId>
+			<version>${project.version}</version>
+        </dependency>
+        <dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20090211</version>
+		</dependency>
+        <dependency>
+            <groupId>android</groupId>
+            <artifactId>android</artifactId>
+            <version>${client-platform.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <testResources>
+            <testResource>
+                <targetPath>${resource.directory}</targetPath>
+                <includes>
+                    <include>**/*.sql</include>
+                </includes>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>${resource.directory}</directory>
+                <includes>
+                    <include>**/*.yml</include>
+                </includes>
+                <targetPath>${project.build.testOutputDirectory}</targetPath>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+	         <groupId>org.apache.maven.plugins</groupId>
+	         <artifactId>maven-dependency-plugin</artifactId>
+	         <version>2.5.1</version>
+	         <executions>
+	           <execution>
+	             <id>unpack</id>
+	             <phase>initialize</phase>
+	             <goals>
+	               <goal>unpack</goal>
+	             </goals>
+	             <configuration>
+	               <artifactItems>
+	                 <artifactItem>
+	                   <groupId>${project.groupId}</groupId>
+						<artifactId>server</artifactId>
+						<version>${project.version}</version>
+						<type>test-jar</type>
+	                   <overWrite>true</overWrite>
+	                   <outputDirectory>${resource.directory}</outputDirectory>
+	                   <includes>**/*.sql,**/*.yml</includes>
+	                 </artifactItem>
+	               </artifactItems>
+	             </configuration>
+	           </execution>
+	         </executions>
+	       </plugin>
+            <plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>sql-maven-plugin</artifactId>
+		        <version>1.5</version>
+		
+		        <dependencies>
+		          <!-- specify the dependent JDBC driver here -->
+		          <dependency>
+		                  <groupId>mysql</groupId>
+		                  <artifactId>mysql-connector-java</artifactId>
+		                  <version>${mysql-connector.version}</version>
+		          </dependency>
+		        </dependencies>
+		
+		        <!-- common configuration shared by all executions -->
+		        <configuration>
+		          <driver>com.mysql.jdbc.Driver</driver>
+		          <url>jdbc:mysql://localhost:3306</url>
+		          <username>root</username>
+		          <password></password>
+		        </configuration>
+		
+		        <executions>
+		          <execution>
+		            <phase>process-test-resources</phase>
+		            <goals>
+		              <goal>execute</goal>
+		            </goals>
+		            <!-- specific configuration for this execution -->
+		            <configuration>
+		              <srcFiles>
+		                <srcFile>${sql.directory}/setup-db.sql</srcFile>
+		                <srcFile>${sql.directory}/build-schema.sql</srcFile>
+		                <srcFile>${sql.directory}/insert-test-users.sql</srcFile>
+		              </srcFiles>
+		            </configuration>
+		          </execution>
+		        </executions>
+		      </plugin>
+            
+        </plugins>
+        
+    </build>
+</project>

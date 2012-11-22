@@ -1,5 +1,8 @@
 package uk.ac.sussex.asegr3.tracker.client.ui;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+
 import uk.ac.sussex.asegr3.tracker.client.service.login.LoginGrantedListener;
 import uk.ac.sussex.asegr3.tracker.client.service.login.LoginService;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
@@ -10,6 +13,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 
 public class UiLogin extends Activity implements LoginGrantedListener{
@@ -21,25 +25,28 @@ public class UiLogin extends Activity implements LoginGrantedListener{
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        final LoginService loginService = new LoginServiceFactory().create(this, this, AsyncTask.SERIAL_EXECUTOR, AndroidLogger.INSTANCE);
+        
+        final ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
+		try {
+			final LoginService loginService = new LoginServiceFactory().create(this, this, AsyncTask.SERIAL_EXECUTOR, AndroidLogger.INSTANCE);
+			Button next = (Button) findViewById(R.id.button1);      
+			next.setOnClickListener(new View.OnClickListener() {
+	            public void onClick(View view) {
+	                loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
+	                
+	                progress.setVisibility(ProgressBar.VISIBLE);
+	            }
+
+	        });
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
         
         //getting the connection of the objects
         inputName = (EditText) findViewById(R.id.editText1);
-		inputPassword = (EditText) findViewById(R.id.editText2);
-        Button next = (Button) findViewById(R.id.button1);
-        
-        next.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
-                
-                //TODO update ui to have nice loading message
-                Intent myIntent = new Intent(view.getContext(), UiLoading.class);
-                startActivity(myIntent);
-                
-            }
-
-        });
-        
+		inputPassword = (EditText) findViewById(R.id.editText2);  
        
         //register button
         
@@ -66,18 +73,16 @@ public class UiLogin extends Activity implements LoginGrantedListener{
 	@Override
 	public void processLogin(HttpTransportClientApi api) {
 		// remove loading message from above 
-		finish();
+		//finish();
 		
 		Intent myIntent = new Intent(this.getBaseContext(), TrackingActivity.class);
-         myIntent.putExtra(TrackingActivity.API, api);
-		 
 		 startActivity(myIntent);
 	}
 
 	@Override
 	public void processFailedLogin(Exception e) {
 		// TODO remove loading message and show error message.
-		finish();
+		//finish();
 		
 		Intent myIntent = new Intent(this.getBaseContext(), UiError.class);
     	 startActivity(myIntent);

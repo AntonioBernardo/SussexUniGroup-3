@@ -24,7 +24,7 @@ public class TransportLocationUnitTest {
 	public void givenTransportLocationObject_whenCallingGet_RetrievesSameData(){
 		assertThat(candidate.getLattitude(), equalTo(LATT_TEST));
 		assertThat(candidate.getLongitude(), equalTo(LONG_TEST));
-		assertThat(candidate.getTimeStamp(), equalTo(TIME_TEST));
+		assertThat(candidate.getTimestamp(), equalTo(TIME_TEST));
 		
 	}
 }

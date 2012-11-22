@@ -9,6 +9,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.yammer.dropwizard.auth.Auth;
+
+import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
@@ -27,10 +30,10 @@ public class LocationResource {
 	}
 
 	@POST
-	public void addLocation(TransportLocation location){
+	public void addLocation(@Auth LoggedInUser user, TransportLocation location){
 		
 		LocationDTO locationDetails=
-				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimeStamp());
+				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimestamp());
 		
 		locationService.storeLocation(locationDetails);
 		
@@ -38,13 +41,13 @@ public class LocationResource {
 	
 	@POST
 	@Path("/batch")
-	public void addLocations(TransportLocationBatch transportLocations){
+	public void addLocations(@Auth LoggedInUser user, TransportLocationBatch transportLocations){
 		
 		List<LocationDTO> locations=new ArrayList<LocationDTO>();
 		
 		for(TransportLocation transportLocation : transportLocations.getLocations()){
 			LocationDTO locationDetails=new LocationDTO(transportLocation.getLattitude(), 
-					transportLocation.getLongitude(), transportLocation.getTimeStamp());
+					transportLocation.getLongitude(), transportLocation.getTimestamp());
 			
 			locations.add(locationDetails);
 		}

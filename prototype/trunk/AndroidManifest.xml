@@ -4,13 +4,18 @@
     android:versionCode="1"
     android:versionName="0.0.1-SNAPSHOT" >
 
-    <uses-sdk android:minSdkVersion="16" />
+    <uses-sdk android:minSdkVersion="15" />
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-  	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-   	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>   
-    
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:icon="@drawable/icon"
@@ -18,13 +23,28 @@
         <uses-library android:name="com.google.android.maps" />
 
         <activity
-            android:name=".HelloAndroidActivity"
+            android:name="uk.ac.sussex.asegr3.prototype.HelloAndroidActivity"
             android:theme="@android:style/Theme.NoTitleBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="uk.ac.sussex.asegr3.prototype.TakePictureActivity"
+            android:label="@string/title_activity_take_picture" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="uk.ac.sussex.asegr3.prototype.HelloAndroidActivity" />
+        </activity>
+        <activity
+            android:name="uk.ac.sussex.asegr3.prototype.NewPictureActivity"
+            android:label="@string/title_activity_new_picture"
+            android:parentActivityName="uk.ac.sussex.asegr3.prototype.HelloAndroidActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="uk.ac.sussex.asegr3.prototype.HelloAndroidActivity" />
         </activity>
     </application>
 

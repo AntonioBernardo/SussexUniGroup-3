@@ -51,7 +51,7 @@
 			<version>${mysql-connector.version}</version>
 		</dependency>
 		<dependency>
-        	<groupId>${project.groupId}</groupId>
+    		<groupId>${project.groupId}</groupId>
         	<artifactId>transport</artifactId>
         	<version>${project.version}</version>
     	</dependency>

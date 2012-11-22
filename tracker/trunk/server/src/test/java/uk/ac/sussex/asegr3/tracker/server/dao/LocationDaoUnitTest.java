@@ -24,7 +24,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.skife.jdbi.v2.DBI;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TrackerDaoUnitTest {
+public class LocationDaoUnitTest {
 	
 	private static final String TEST_USER = "testUser";
 	private static final double TEST_LAT = 85.3453;

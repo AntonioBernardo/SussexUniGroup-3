@@ -2,8 +2,10 @@ package uk.ac.sussex.asegr3.tracker.server.services;
 
 import java.util.List;
 
+import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
-import uk.ac.sussex.asegr3.tracker.server.dao.UserDao;
+
+import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 
 public class LocationService {
@@ -12,27 +14,27 @@ public class LocationService {
 	private static final double DEFAULT_TIME_FRESHNESS = 5;
 	
 	private final LocationDao dao;
+	private final CommentDao commentDao;
 	
-	public LocationService(LocationDao dao){
+	public LocationService(LocationDao dao, CommentDao commentDao){
 		this.dao = dao;
+		this.commentDao = commentDao;
 	}
 	
-	public void storeLocation(LocationDTO location){
+	public void storeLocation(String username, LocationDTO location){
 		// Do the database integration here...
 		// Store location in database
 		
-		dao.insert(location.getUsername(), location.getLatitude(), location.getLongitude(), location.getTimeStamp());
+		dao.insert(username, location.getLatitude(), location.getLongitude(), location.getTimestamp());
 	}
 	
-	public void storeLocations(List<LocationDTO> locations){
+	public void storeLocations(String userId, List<LocationDTO> locations){
 		
-		if(locations!=null){
-			for(LocationDTO location : locations){
-				// Do the database integration here...
-				// Store location in database
-				storeLocation(location);
-			}
-		}
+		dao.insert(userId, locations);
+	}
+
+	public void addComment(CommentDTO commentDTO) {
+		//dao.
 	}
 
 	public List<LocationDTO> getNearbyLocations(String username) {

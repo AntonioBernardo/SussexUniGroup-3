@@ -23,6 +23,6 @@ public class LocationDTOUnitTest {
 	public void givenALocation_ReturnsSameValues(){
 		assertThat(candidate.getLatitude(), equalTo(TEST_LAT));
 		assertThat(candidate.getLongitude(), equalTo(TEST_LONG));
-		assertThat(candidate.getTimeStamp(), equalTo(TEST_TIMESTAMP));
+		assertThat(candidate.getTimestamp(), equalTo(TEST_TIMESTAMP));
 	}
 }

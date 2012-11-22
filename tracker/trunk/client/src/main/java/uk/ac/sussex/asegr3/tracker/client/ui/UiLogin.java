@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 public class UiLogin extends Activity implements LoginGrantedListener{
@@ -27,6 +28,8 @@ public class UiLogin extends Activity implements LoginGrantedListener{
         setContentView(R.layout.login);
         
         final ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
+        
+        
 		try {
 			final LoginService loginService = new LoginServiceFactory().create(this, this, AsyncTask.SERIAL_EXECUTOR, AndroidLogger.INSTANCE);
 			Button next = (Button) findViewById(R.id.button1);      
@@ -34,7 +37,10 @@ public class UiLogin extends Activity implements LoginGrantedListener{
 	            public void onClick(View view) {
 	                loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
 	                
-	                progress.setVisibility(ProgressBar.VISIBLE);
+	              //  progress.setVisibility(ProgressBar.VISIBLE);
+	                Toast.makeText(getBaseContext(),
+							"Loading.....",
+							Toast.LENGTH_SHORT).show();
 	            }
 
 	        });

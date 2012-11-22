@@ -4,18 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.yammer.dropwizard.auth.Auth;
 
 import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
+import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
+import uk.ac.sussex.asegr3.transport.beans.TransportComment;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
+import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
 
 @Path("/location")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,9 +38,9 @@ public class LocationResource {
 	public void addLocation(@Auth LoggedInUser user, TransportLocation location){
 		
 		LocationDTO locationDetails=
-				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimestamp());
+				new LocationDTO(user.getUsername(), location.getLattitude(), location.getLongitude(), location.getTimestamp());
 		
-		locationService.storeLocation(locationDetails);
+		locationService.storeLocation(user.getUsername(), locationDetails);
 		
 	}
 	
@@ -46,12 +51,29 @@ public class LocationResource {
 		List<LocationDTO> locations=new ArrayList<LocationDTO>();
 		
 		for(TransportLocation transportLocation : transportLocations.getLocations()){
-			LocationDTO locationDetails=new LocationDTO(transportLocation.getLattitude(), 
+			LocationDTO locationDetails=new LocationDTO(user.getUsername(), transportLocation.getLattitude(), 
 					transportLocation.getLongitude(), transportLocation.getTimestamp());
 			
 			locations.add(locationDetails);
 		}
 		
-		locationService.storeLocations(locations);
+		locationService.storeLocations(user.getUsername(), locations);
+	}
+	
+	@POST
+	@Path("/${locationId}/comment")
+	public void addComment(@PathParam("locationId") int locationId, TransportComment transportComment){
+		CommentDTO commentDTO = new CommentDTO(transportComment.getText(), locationId, transportComment.getImage());
+		
+		locationService.addComment(commentDTO);
+	}
+	
+	@GET
+	@Path("/nearby")
+	public TransportUserLocationCollection getNearbyLocations(@Auth LoggedInUser user){
+		
+		locationService.getNearbyLocations(user.getUsername());
+		
+		return null;
 	}
 }

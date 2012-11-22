@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/item1" android:title="Comment" android:icon="@drawable/icon">
+        <menu>
+            <item android:id="@+id/item2" android:title="comment"/>
+            <item android:id="@+id/item3" android:title="location"/>
+            <item
+		      android:id="@+id/add"
+		      android:icon="@android:drawable/ic_menu_add"
+		      android:title="Add"/>
+		
+		   <item
+		      android:id="@+id/help"
+		      android:icon="@android:drawable/ic_menu_help"
+		      android:title="Help"/>
+        </menu>
+    </item>
+	<LinearLayout
+	       xmlns:android="http://schemas.android.com/apk/res/android"
+	       android:layout_width="match_parent"
+	       android:layout_height="match_parent"
+	       android:gravity="center"
+	       android:orientation="vertical" >
+	 
+	       <ListView
+	          android:id="@android:id/list"
+	          android:fadingEdge="vertical"
+	          android:fadingEdgeLength="10dp"
+	          android:longClickable="true"
+	          android:listSelector="@drawable/icon"
+	          android:layout_width="match_parent"
+	          android:layout_height="match_parent" >
+	       </ListView>
+	       <TextView>
+	          android:id="@android:id/empty"
+	          android:layout_width="wrap_content"
+	          android:layout_height="wrap_content"
+	          android:layout_gravity="center"
+	          android:text="Loading feed data..." 
+	       </TextView>
+	       <RelativeLayout
+		       xmlns:android="http://schemas.android.com/apk/res/android"
+		       android:layout_width="match_parent"
+		       android:layout_height="wrap_content" >
+		 
+		       <ImageView
+		          android:id="@+id/listImage"
+		          android:layout_width="100dp"
+		          android:layout_height="100dp"
+		          android:layout_alignParentLeft="true"
+		          android:layout_centerVertical="true"
+		          android:layout_margin="10dp"
+		          android:background="#ffcccccc" />
+		 
+		       <TextView
+		          android:id="@+id/listTitle"
+		          android:layout_width="wrap_content"
+		          android:layout_height="wrap_content"
+		          android:layout_alignTop="@+id/listImage"
+		          android:layout_toRightOf="@+id/listImage"
+		          android:text="A List item title"
+		          android:textSize="16sp"
+		          android:textStyle="bold" />
+		 
+		       <TextView
+		          android:id="@+id/listDescription"
+		          android:layout_width="wrap_content"
+		          android:layout_height="wrap_content"
+		          android:layout_below="@+id/listTitle"
+		          android:layout_marginTop="5dp"
+		          android:maxLines="4"
+		          android:layout_toRightOf="@+id/listImage"
+		          android:text="The List item description"
+		          android:textSize="14sp" />
+		 
+		</RelativeLayout>
+	</LinearLayout>
+
+</menu>

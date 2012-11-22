@@ -24,13 +24,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.skife.jdbi.v2.DBI;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TrackerDaoUnitTest {
+public class LocationDaoUnitTest {
 	
-	private static final int TEST_USER = 56;
+	private static final String TEST_USER = "testUser";
 	private static final double TEST_LAT = 85.3453;
 	private static final double TEST_LONG = 98453.5646432;
 	private static final long TEST_TIMESTAMP = 34578345723L;
-	private static final String EXPECTED_SQL = "insert into location (fk_user_id, latitude, longitude, timestamp_added) values (?, ?, ?, ?)";
+	private static final String EXPECTED_SQL = "insert into location (fk_user_id, latitude, longitude, timestamp_added) values ((select id from user where username=?), ?, ?, ?)";
 
 	private LocationDao candidate;
 	

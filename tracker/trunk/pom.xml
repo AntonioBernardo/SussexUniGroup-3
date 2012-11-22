@@ -30,7 +30,7 @@
   <properties>
     <slf4j.version>1.6.6</slf4j.version>
     <logback.version>1.0.7</logback.version>
-    <corbertura.success-rate>65</corbertura.success-rate>
+    <corbertura.success-rate>40</corbertura.success-rate>
     <cobertura.runtests>true</cobertura.runtests>
     <mockito.version>1.8.5</mockito.version>
     <jetty.version>6.1.25</jetty.version>

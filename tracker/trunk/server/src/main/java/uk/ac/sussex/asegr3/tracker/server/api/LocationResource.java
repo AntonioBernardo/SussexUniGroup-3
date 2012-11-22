@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -16,6 +17,7 @@ import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
+import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
 
 @Path("/location")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,7 +35,7 @@ public class LocationResource {
 	public void addLocation(@Auth LoggedInUser user, TransportLocation location){
 		
 		LocationDTO locationDetails=
-				new LocationDTO(location.getLattitude(), location.getLongitude(), location.getTimestamp());
+				new LocationDTO(user.getUsername(), location.getLattitude(), location.getLongitude(), location.getTimestamp());
 		
 		locationService.storeLocation(locationDetails);
 		
@@ -46,12 +48,21 @@ public class LocationResource {
 		List<LocationDTO> locations=new ArrayList<LocationDTO>();
 		
 		for(TransportLocation transportLocation : transportLocations.getLocations()){
-			LocationDTO locationDetails=new LocationDTO(transportLocation.getLattitude(), 
+			LocationDTO locationDetails=new LocationDTO(user.getUsername(), transportLocation.getLattitude(), 
 					transportLocation.getLongitude(), transportLocation.getTimestamp());
 			
 			locations.add(locationDetails);
 		}
 		
 		locationService.storeLocations(locations);
+	}
+	
+	@GET
+	@Path("/nearby")
+	public TransportUserLocationCollection getNearbyLocations(@Auth LoggedInUser user){
+		
+		locationService.getNearbyLocations(user.getUsername());
+		
+		return null;
 	}
 }

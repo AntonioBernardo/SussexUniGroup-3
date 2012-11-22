@@ -23,7 +23,7 @@ target
 .DS_Store
 
 # ide files
-
+.metadata
 .classpath
 .settings
 .project

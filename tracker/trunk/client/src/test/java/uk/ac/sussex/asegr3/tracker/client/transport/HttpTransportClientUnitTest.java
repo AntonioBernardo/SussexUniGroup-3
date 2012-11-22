@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 import org.apache.commons.codec.binary.Base64;
+
 import org.apache.http.client.ClientProtocolException;
 import org.junit.Before;
 import org.junit.Test;

@@ -23,14 +23,14 @@ public interface LocationDao {
 	  @SqlBatch("insert into location (fk_user_id, latitude, longitude, timestamp_added) values ((select id from user where username=:username), :latitude, :longitude, :timestamp)")
 	  void insert(@Bind("username") String username, @BindBean Iterable<LocationDTO> inserts);
 	  
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from tracker.user u, tracker.location loc where u.id = loc.fk_user_id")
+	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id")
 	  List<LocationDTO> getLocations(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax, int numRowsToReturn);
 
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from tracker.user u, tracker.location loc where u.id = loc.fk_user_id and u.username=:username order by loc.timestamp_added desc limit 1")
+	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and u.username=:username order by loc.timestamp_added desc limit 1")
 	  LocationDTO getLatestLocationForUser(@Bind("username") String username);
 	  
 	  //--get UNION to display location stamp_added range and location longitude and latitude range
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from tracker.user u, tracker.location loc where u.id = loc.fk_user_id and loc.timestamp_added between :timeMin and :timeMax union select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from tracker.user u, tracker.location loc where u.id = loc.fk_user_id and loc.latitude between :latMin and :latMax and loc.longitude between :longMin and :longMax")
+	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and loc.timestamp_added between :timeMin and :timeMax union select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and loc.latitude between :latMin and :latMax and loc.longitude between :longMin and :longMax")
 	  List<LocationDTO> getLocationsTimestampRange(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax);
 
 	  //--get and display location longitude and latitude range

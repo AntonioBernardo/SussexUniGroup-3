@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS `tracker`.`user` (
+use trackertest;
+
+CREATE TABLE IF NOT EXISTS `user` (
 	`id` INT NOT NULL AUTO_INCREMENT ,
 	PRIMARY KEY (`id`) ,
 	`username` varchar(15) NOT NULL,
@@ -6,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tracker`.`user` (
 );
 
 
-CREATE TABLE IF NOT EXISTS `tracker`.`location` (
+CREATE TABLE IF NOT EXISTS `location` (
 	`id` INT NOT NULL AUTO_INCREMENT ,
 	 PRIMARY KEY (`id`) ,
 	`fk_user_id` INT NOT NULL ,

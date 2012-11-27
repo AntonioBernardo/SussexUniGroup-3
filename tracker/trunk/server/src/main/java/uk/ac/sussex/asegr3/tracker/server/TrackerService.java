@@ -17,6 +17,7 @@ import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.UserDao;
 import uk.ac.sussex.asegr3.tracker.server.healthcheck.DatabaseHealthCheck;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
+import uk.ac.sussex.asegr3.tracker.server.services.UserService;
 import uk.ac.sussex.asegr3.tracker.server.services.authentication.AuthenticationService;
 
 import com.sun.jersey.api.core.ResourceConfig;
@@ -53,13 +54,14 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		//services 
 		
 		AuthenticationService authService = createAuthenticationService(userDao, configuration, clock);
+		UserService userService = new UserService(userDao, authService);
 		
 		// health checks
 		addHealthCheck(environment, new DatabaseHealthCheck(database));
 		
 		// resources
 		environment.addResource(new LocationResource(new LocationService(locationDao,commentDao)));
-		environment.addResource(new UserResource(authService));
+		environment.addResource(new UserResource(authService, userService));
 		environment.enableJerseyFeature(ResourceConfig.FEATURE_TRACE);
 		
 		// providers

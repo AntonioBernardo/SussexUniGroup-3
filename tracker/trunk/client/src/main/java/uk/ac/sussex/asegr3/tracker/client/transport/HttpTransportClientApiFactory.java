@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -29,6 +26,15 @@ public class HttpTransportClientApiFactory implements Serializable{
 	public HttpTransportClientApi create(String username, String password) throws AuthenticationException{
 
 		final String token = client.login(username, password);
+		
+		CURRENT_API =  new TokenBasedHttpTransportClientApi(client, token);
+			
+		return CURRENT_API;
+	}
+	
+	public HttpTransportClientApi createFromNewUser(String username, String password) throws NewUserSignupException{
+
+		final String token = client.signupUser(username, password);
 		
 		CURRENT_API =  new TokenBasedHttpTransportClientApi(client, token);
 			

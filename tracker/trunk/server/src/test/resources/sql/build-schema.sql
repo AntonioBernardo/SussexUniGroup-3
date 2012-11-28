@@ -21,7 +21,7 @@ ON UPDATE NO ACTION);
 
 
 
-CREATE  TABLE IF NOT EXISTS`tracker`.`comments` (
+CREATE  TABLE IF NOT EXISTS `comments` (
  
  	`id` INT NOT NULL AUTO_INCREMENT ,
   

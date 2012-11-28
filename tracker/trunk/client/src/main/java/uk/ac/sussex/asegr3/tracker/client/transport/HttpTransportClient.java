@@ -39,6 +39,7 @@ class HttpTransportClient implements Serializable{
 	private final URI uri;
 	private final URL addBatchUri;
 	private final URL authenticateRequestUri;
+	private final URL addNewUserUri;
 	private final String hostname;
 	private final transient Logger logger;
 	private final transient NetworkInfoProvider networkInfoProvider;
@@ -50,6 +51,7 @@ class HttpTransportClient implements Serializable{
 		this.uri = new URI("http://"+this.hostname);
 		this.addBatchUri = new URL(uri.toString() +"/location/batch");
 		this.authenticateRequestUri = new URL(uri.toString()+"/user/");
+		this.addNewUserUri = new URL(uri.toString()+"/user/");
 		this.logger = logger;
 		this.networkInfoProvider = networkInfoProvider;
 		this.httpClientFactory = httpClientFactory;
@@ -91,7 +93,7 @@ class HttpTransportClient implements Serializable{
 		byte[] newUserPayload = getJsonPayloadForNewUserRequest(username, password);
 		
 		try{
-			Response response = postJsonData(newUserPayload, new URL(authenticateRequestUri+username+"/authenticate"));
+			Response response = postJsonData(newUserPayload, new URL(addNewUserUri+username));
 			if (!isResponseOk(response)){
 				throw new NewUserSignupException(getErrorMessage(response));
 			} else{
@@ -156,24 +158,23 @@ class HttpTransportClient implements Serializable{
 		    }
 		    
 		    byte[] content;
+		    InputStream in;
 		    if (isStatusCodeOk(statusCode)){
-			    InputStream in = new BufferedInputStream(connection.getInputStream());
+			    in = new BufferedInputStream(connection.getInputStream());
 			   
-			    
-			    // now parse stream
-			    
-			    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-			    
-			    while(in.read(buffer) != -1){
-			    	baos.write(buffer);
-			    }
-			    content = baos.toByteArray();
 			} else{
-				content = new byte[]{};
+				in = new BufferedInputStream(connection.getErrorStream());
 			}
 		    
-			    
+		    // now parse stream
+		    
+		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+		    
+		    while(in.read(buffer) != -1){
+		    	baos.write(buffer);
+		    }
+		    content = baos.toByteArray();
 		    
 		    return new Response(connection.getResponseCode(), content);
 		} finally{

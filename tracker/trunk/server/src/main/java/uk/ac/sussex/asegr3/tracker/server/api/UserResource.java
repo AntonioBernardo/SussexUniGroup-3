@@ -60,7 +60,7 @@ public class UserResource {
 	@Path("/{username}/")
 	@POST
 	public TransportAuthenticationToken signup(TransportNewUserRequest newUserRequest, @PathParam("username") String username){
-		if (username.equals(newUserRequest.getUsername())){
+		if (!username.equals(newUserRequest.getUsername())){
 			throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
 					.entity(new TransportErrorResponse(ErrorCode.INVALID_API_REQUEST, "url username context does not match request payload"))
 					.build());

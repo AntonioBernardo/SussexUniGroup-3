@@ -17,8 +17,12 @@ public class TransportNewUserRequest {
 	private String password;
 	
 	public TransportNewUserRequest(String username, String password){
+		this();
 		setUsername(username);
 		setPassword(password);
+	}
+	public TransportNewUserRequest(){
+		
 	}
 	public String getUsername() {
 		return username;

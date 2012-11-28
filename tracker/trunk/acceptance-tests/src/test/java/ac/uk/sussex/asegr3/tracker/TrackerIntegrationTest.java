@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.server.Server;
@@ -14,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
+import uk.ac.sussex.asegr3.tracker.client.service.NewUserCallback;
+import uk.ac.sussex.asegr3.tracker.client.service.NewUserService;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.transport.AuthenticationException;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
@@ -23,6 +27,7 @@ import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 
 import static uk.ac.sussex.asegr3.tracker.server.IntegrationTestingUtils.startEmbeddedJetty;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -46,6 +51,18 @@ public class TrackerIntegrationTest {
 			}
 			
 		};
+		
+	private static final Executor SYNCHRONOUS_EXECUTOR = new Executor(){
+
+		@Override
+		public void execute(Runnable command) {
+			command.run();
+		}
+		
+	};
+	private static final String LOCAL_ADDRESS = "localhost:4312";
+	private static final String TEST_NEW_USERNAME = "newTestUser";
+	private static final String TEST_NEW_USER_PASSWORD = "newTestUserPassword";
 	
 	
 	@BeforeClass
@@ -56,7 +73,7 @@ public class TrackerIntegrationTest {
 	
 	@Test
 	public void givenCredentials_whenCallinglogin_thenExpectedTokenReturned() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
 		HttpTransportClientApi api = apiFactory.create(TEST_USER_NAME, TEST_PASSWORD);
 		
 		assertThat(api, is(not(nullValue())));
@@ -64,14 +81,14 @@ public class TrackerIntegrationTest {
 	
 	@Test(expected=AuthenticationException.class)
 	public void givenIncorrectCredentials_whenCallinglogin_thenAuthenticationExceptionThrown() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
 		apiFactory.create(TEST_USER_NAME, TEST_PASSWORD+45);
 
 	}
 	
 	@Test
 	public void givenTestBatch_whenCallingprocessBatch_thenBatchAddedToDb() throws MalformedURLException, URISyntaxException, AuthenticationException{
-		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create("localhost:4312", CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
 		HttpTransportClientApi api = apiFactory.create(TEST_USER_NAME, TEST_PASSWORD);
 		
 		List<LocationDto> testLocations = new ArrayList<LocationDto>();
@@ -80,6 +97,33 @@ public class TrackerIntegrationTest {
 		}
 		LocationBatch testBatch = new LocationBatch(testLocations, 1);
 		assertThat(api.processBatch(testBatch), is(equalTo(true)));
+	}
+	
+	@Test
+	public void givenNewUser_whenCallingNewUser_thenNewUserAdded() throws MalformedURLException, URISyntaxException{
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
+		
+		final AtomicBoolean processedUser = new AtomicBoolean(false);
+		NewUserService newUserService = new NewUserService(apiFactory, SYNCHRONOUS_EXECUTOR, new NewUserCallback() {
+			
+			@Override
+			public void processNewUser(HttpTransportClientApi api) {
+				assertThat(api, is(not(nullValue())));
+				processedUser.set(true);
+			}
+			
+			@Override
+			public void processFailedSignup(Exception e) {
+				e.printStackTrace();
+				fail("error from request: "+ e.getMessage());
+				
+			}
+		});
+		
+		newUserService.signUp(TEST_NEW_USERNAME, TEST_NEW_USER_PASSWORD, TEST_NEW_USER_PASSWORD);
+		
+		assertThat(processedUser.get(), is(equalTo(true)));
+		
 	}
 }
 

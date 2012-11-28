@@ -48,12 +48,12 @@ public class LocationService {
 		double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
 		double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
 		
-		return null;
-		
-	}
-
-
+	
+	return dao.getLatestLocationForUser(latMin,latMax,longMin,longMax, 0, 0);
+	
 	//--latmin = currentlat - proximity
 	//--latmax = currentLat + proximity
 
+}
+	
 }

@@ -27,15 +27,15 @@ CREATE  TABLE IF NOT EXISTS`tracker`.`comments` (
   
    	PRIMARY KEY (`id`) ,
 
-  	`fK_use_id` INT NOT NULL ,
+  	`fk_use_id` INT NOT NULL ,
 
-	`fK_loc_id` INT NOT NULL ,
+	`fk_loc_id` INT NOT NULL ,
 
 	`comments` VARCHAR(50) NOT NULL , 
 
 	`image` BLOB NOT NULL , 
 
-	FOREIGN KEY (fK_use_id) REFERENCES user(id), 
+	FOREIGN KEY (fK_user_id) REFERENCES user(id), 
 
 	FOREIGN KEY (fK_loc_id) REFERENCES location(id) 
 

@@ -27,7 +27,7 @@ CREATE  TABLE IF NOT EXISTS`tracker`.`comments` (
   
    	PRIMARY KEY (`id`) ,
 
-  	`fk_use_id` INT NOT NULL ,
+  	`fk_user_id` INT NOT NULL ,
 
 	`fk_loc_id` INT NOT NULL ,
 
@@ -35,9 +35,9 @@ CREATE  TABLE IF NOT EXISTS`tracker`.`comments` (
 
 	`image` BLOB NOT NULL , 
 
-	FOREIGN KEY (fK_user_id) REFERENCES user(id), 
+	FOREIGN KEY (fk_user_id) REFERENCES user(id), 
 
-	FOREIGN KEY (fK_loc_id) REFERENCES location(id) 
+	FOREIGN KEY (fk_loc_id) REFERENCES location(id) 
 
 ON DELETE NO ACTION
   ON UPDATE NO ACTION);

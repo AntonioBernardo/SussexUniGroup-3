@@ -32,6 +32,12 @@ public class TransportAuthenticationTokenUnitTest {
 			public String encode(byte[] bytes) {
 				return Base64.encodeBase64String(bytes);
 			}
+
+			@Override
+			public byte[] decode(String code) {
+				// TODO Auto-generated method stub
+				return Base64.decodeBase64(code);
+			}
 			
 		});
 		candidate.toString();

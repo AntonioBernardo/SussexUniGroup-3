@@ -77,6 +77,11 @@ public class CookieSigAuthProviderUnitTest {
 			public String encode(byte[] bytes) {
 				return Base64.encodeBase64String(bytes);
 			}
+
+			@Override
+			public byte[] decode(String code) {
+				return Base64.decodeBase64(code);
+			}
 			
 		}));
 		

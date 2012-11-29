@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -22,6 +23,7 @@ import org.mockito.stubbing.Answer;
 
 import android.net.NetworkInfo;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
@@ -60,6 +62,8 @@ public class HttpTransportClientUnitTest {
 	private static final String EXPECTED_AUTH_REQUEST = "{\"password\":\"testPassword\"}";
 
 	private static final String TEST_SUC_AUTH_RESPONSE = "{\"username\":\"testUser\", \"signature\":\"abcd1234\", \"expires\"=\"1234567\"}";
+
+	private static final String TEST_USER = "testUser";
 	
 	@Mock
 	private Logger loggerMock;
@@ -90,6 +94,12 @@ public class HttpTransportClientUnitTest {
 			@Override
 			public String encode(byte[] bytes) {
 				return Base64.encodeBase64String(bytes);
+			}
+
+			@Override
+			public byte[] decode(String code) {
+				// TODO Auto-generated method stub
+				return Base64.decodeBase64(code);
 			}
 			
 		});
@@ -130,7 +140,7 @@ public class HttpTransportClientUnitTest {
 	@Test
 	public void givenSingleEntryBatch_whenCallingProcessBatch_httpClientInvokedCorrectly() throws ClientProtocolException, IOException{
 		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME)), 0);
+		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME, Collections.<CommentDto>emptyList())), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
@@ -143,8 +153,8 @@ public class HttpTransportClientUnitTest {
 	@Test
 	public void givenMultipleEntryBatch_whenCallingProcessBatch_httpClientInvokedCorrectly() throws ClientProtocolException, IOException{
 		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
-																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
+		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME, Collections.<CommentDto>emptyList()),
+																	new LocationDto(TEST_USER, TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000, Collections.<CommentDto>emptyList())), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
@@ -160,8 +170,8 @@ public class HttpTransportClientUnitTest {
 		
 		when(httpConnectionMock.getResponseCode()).thenReturn(204);
 		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
-																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
+		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME, Collections.<CommentDto>emptyList()),
+																	new LocationDto(TEST_USER, TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000, Collections.<CommentDto>emptyList())), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(true)));
 		
 		verify(httpClientFactoryMock, times(1)).createHttpConnection(any(URL.class));
@@ -176,16 +186,16 @@ public class HttpTransportClientUnitTest {
 		
 		when(httpConnectionMock.getResponseCode()).thenReturn(500);
 		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
-																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
+		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME, Collections.<CommentDto>emptyList()),
+																	new LocationDto(TEST_USER, TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000, Collections.<CommentDto>emptyList())), 0);
 		assertThat(candidate.processBatch(TEST_TOKEN, singleBatch), is(equalTo(false)));
 	}
 	
 	@Test
 	public void givenMultipleEntryBatchAndIoException_whenCallingProcessBatch_thenResultIsFalse() throws ClientProtocolException, IOException{
 		
-		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME),
-																	new LocationDto(TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000)), 0);
+		LocationBatch singleBatch = new LocationBatch(Arrays.asList(new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME, Collections.<CommentDto>emptyList()),
+																	new LocationDto(TEST_USER, TEST_LAT+5, TEST_LONG-6, TEST_TIME+1000, Collections.<CommentDto>emptyList())), 0);
 		
 		when(httpConnectionMock.getInputStream()).thenThrow(new IOException());
 		

@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,35 +14,36 @@ public class LocationDtoUnitTest {
 	private static final long TEST_TIMESTAMP = System.currentTimeMillis();
 	private static final double TEST_LAT = 4.4564;
 	private static final double TEST_LONG = 34.54643;
+	private static final String TEST_USER = "testUser";
 	private LocationDto candidate;
 	
 	@Before
 	public void before(){
-		this.candidate = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIMESTAMP);
+		this.candidate = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIMESTAMP, Collections.<CommentDto>emptyList());
 	}
 	
 	@Test
 	public void given2IdenticalLocationDtos_whenCallingEquals_thenReturnsTrue(){
-		LocationDto anotherSame = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIMESTAMP);
+		LocationDto anotherSame = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIMESTAMP, Collections.<CommentDto>emptyList());
 		assertThat(candidate.equals(anotherSame), is(equalTo(true)));
 		assertThat(candidate.hashCode(), is(equalTo(anotherSame.hashCode())));
 	}
 	
 	@Test
 	public void given2DifferentLatLocationDtos_whenCallingEquals_thenReturnsFalse(){
-		LocationDto anotherSame = new LocationDto(TEST_LAT+1, TEST_LONG, TEST_TIMESTAMP);
+		LocationDto anotherSame = new LocationDto(TEST_USER, TEST_LAT+1, TEST_LONG, TEST_TIMESTAMP, Collections.<CommentDto>emptyList());
 		assertThat(candidate.equals(anotherSame), is(equalTo(false)));
 	}
 	
 	@Test
 	public void given2DifferentLonLocationDtos_whenCallingEquals_thenReturnsFalse(){
-		LocationDto anotherSame = new LocationDto(TEST_LAT, TEST_LONG+1, TEST_TIMESTAMP);
+		LocationDto anotherSame = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG+1, TEST_TIMESTAMP, Collections.<CommentDto>emptyList());
 		assertThat(candidate.equals(anotherSame), is(equalTo(false)));
 	}
 	
 	@Test
 	public void given2DifferentTimestampLocationDtos_whenCallingEquals_thenReturnsFalse(){
-		LocationDto anotherSame = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIMESTAMP+1);
+		LocationDto anotherSame = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIMESTAMP+1, Collections.<CommentDto>emptyList());
 		assertThat(candidate.equals(anotherSame), is(equalTo(false)));
 	}
 	

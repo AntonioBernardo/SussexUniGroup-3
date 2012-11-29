@@ -1,6 +1,6 @@
 package uk.ac.sussex.asegr3.tracker.server.dao;
 
-import java.util.List;
+import java.util.Set;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.BindBean;
@@ -23,23 +23,69 @@ public interface LocationDao {
 	  @SqlBatch("insert into location (fk_user_id, latitude, longitude, timestamp_added) values ((select id from user where username=:username), :latitude, :longitude, :timestamp)")
 	  void insert(@Bind("username") String username, @BindBean Iterable<LocationDTO> inserts);
 	  
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id")
-	  List<LocationDTO> getLocations(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax, int numRowsToReturn);
-
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and u.username=:username order by loc.timestamp_added desc limit 1")
+	  @SqlQuery("select * from " +
+	  							"(select locuser.username as \"locuser\", " +
+	  							"l.fk_user_id, " +
+	  							"l.id, l.latitude, " +
+	  							"l.longitude, " +
+	  							"l.timestamp_added as \"loctimestamp\", " +
+	  							"c.comments, " +
+	  							"c.image, " +
+	  							"c.timestamp_added as \"comtimestamp\", " +
+	  							"comuser.username as \"comuser\" " +
+	  							"from user locuser, " +
+	  							"location l left outer join comments c on l.id = c.fk_loc_id " +
+	  							"left outer join user comuser on c.fk_user_id = comuser.id " +
+	  							"where l.fk_user_id = locuser.id " +
+	  							"order by l.timestamp_added desc) " +
+	  					"orderedLocs where " +
+	  					"locuser = :username limit 1")
 	  LocationDTO getLatestLocationForUser(@Bind("username") String username);
 	  
-	  //--get UNION to display location stamp_added range and location longitude and latitude range
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and loc.timestamp_added between :timeMin and :timeMax union select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and loc.latitude between :latMin and :latMax and loc.longitude between :longMin and :longMax")
-	  List<LocationDTO> getLocationsTimestampRange(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax);
 
-	  //--get and display location with comments,longitude and latitude with limit of 10
-	  @SqlQuery(" select loc.id, u.username as as \"user\", loc.latitude as \"lat\",loc.longitude as \"long\", loc.timestamp_added as \"time\",com.comments as \"comments\" from user u, location loc, comments com	where u.id = loc.fk_user_id	and loc.id=com.fk_loc_id and loc.latitude between :latMin and :latMax and loc.longitude between :longMin and :longMax order by loc.timestamp_added desc limit 10")																																				
-	 List<LocationDTO> getLatestLocationForUser(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax);
-	  
-	//--get and display Latitutude and Longitude for all users
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\" from user u, location loc where u.id = loc.fk_user_id and u.username=:username")
-	  LocationDTO getLatestLocationsForSpecificUser(@Bind("username") String username);
-
+	  @SqlQuery("select * from (" +
+	  					"select * from " +
+	  							"(select locuser.username as \"locuser\", " +
+	  							"l.fk_user_id, " +
+	  							"l.id, l.latitude, " +
+	  							"l.longitude, " +
+	  							"l.timestamp_added as \"loctimestamp\", " +
+	  							"c.comments, " +
+	  							"c.image, " +
+	  							"c.timestamp_added as \"comtimestamp\", " +
+	  							"comuser.username as \"comuser\" " +
+	  							"from user locuser, " +
+	  							"location l left outer join comments c on l.id = c.fk_loc_id " +
+	  							"left outer join user comuser on c.fk_user_id = comuser.id " +
+	  							"where l.fk_user_id = locuser.id " +
+	  							"order by l.timestamp_added desc) " +
+	  					"orderedLocs where " +
+	  					"longitude between :longMin and :longMax " +
+	  					"and latitude between :latMin and :latMax " +
+	  					"and locuser != :currentuser " +
+	  					"group by fk_user_id " +
+	  					
+			  			"union " +
+			  			
+			  			"select locuser.username as \"locuser\", " +
+			  			"l.fk_user_id, l.id, " +
+			  			"l.latitude, " +
+			  			"l.longitude, " +
+			  			"l.timestamp_added as \"loctimestamp\", " +
+			  			"c.comments, " +
+			  			"c.image, " +
+			  			"c.timestamp_added as \"comtimestamp\", " +
+			  			"comuser.username as \"comuser\" " +
+			  			"from user locuser, " +
+			  			"location l, " +
+			  			"user comuser, " +
+			  			"comments c " +
+			  			"where locuser.id = l.fk_user_id " +
+			  			"and l.id = c.fk_loc_id " +
+			  			"and c.fk_user_id = comuser.id " +
+			  			"and longitude between :longMin and :longMax " +
+			  			"and latitude between :latMin and :latMax) " +
+			  	"unlimited limit :rowLimit")
+	  Set<LocationDTO> getNearbyLocations(@Bind("currentuser") String currentUsername, @Bind("latMin") double latMin, @Bind("latMax") double latMax, @Bind("longMin") double longMin, @Bind("longMax") double longMax, @Bind("rowLimit") int limit);
 }
 

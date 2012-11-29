@@ -17,7 +17,7 @@ public class TransportLocationBatchUnitTest {
 	@Before
 	public void before(){
 		candidate=new TransportLocationBatch(new ArrayList<TransportLocation>());
-		loc=new TransportLocation(123.45, 123.46, System.currentTimeMillis());
+		loc=new TransportLocation(1, 123.45, 123.46, System.currentTimeMillis());
 		candidate.addLocation(loc);
 	}
 	

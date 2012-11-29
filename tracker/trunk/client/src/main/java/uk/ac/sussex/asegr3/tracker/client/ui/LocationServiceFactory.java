@@ -8,6 +8,7 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import uk.ac.sussex.asegr3.tracker.client.location.BatchLocationConsumer;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationCache;
@@ -24,12 +25,14 @@ public class LocationServiceFactory {
 	private static final int DEFAULT_BATCH_SIZE = 10;
 	private static final long DEFAULT_FLUSH_TIME = TimeUnit.MINUTES.toMillis(1);
 
-	public LocationService create(Activity activity, HttpTransportClientApi api, MapViewProvider mapViewProvider,  Logger logger, Executor executor) {
+	public LocationService create(Activity activity, HttpTransportClientApi api, MapViewProvider mapViewProvider,  Logger logger, Executor executor,
+			FetchLocationCallBack fetchLocationCallBack) {
 		
 		if (api == null){
 			throw new IllegalArgumentException("No api has been authenticated");
 		}
-		LocationService service = new LocationService((LocationManager) activity.getSystemService(Context.LOCATION_SERVICE), DEFAULT_PROXIMITY_DISTANCE, logger);
+		LocationService service = new LocationService((LocationManager) activity.getSystemService(Context.LOCATION_SERVICE), DEFAULT_PROXIMITY_DISTANCE, logger,
+				api, AsyncTask.SERIAL_EXECUTOR, fetchLocationCallBack);
 		LocationCache locationCache = new LocationCache(DEFAULT_CACHE_LIMIT, DEFAULT_BATCH_SIZE, DEFAULT_FLUSH_TIME, api, logger, executor);
 		
 		UiUpdater uiUpdater = new UiUpdater(mapViewProvider);

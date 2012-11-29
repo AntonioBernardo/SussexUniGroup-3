@@ -8,6 +8,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +16,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.ac.sussex.asegr3.tracker.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
-import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
+import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 
@@ -39,7 +41,7 @@ public class LocationServiceUnitTest {
 	public void before(){
 		
 		candidate=new LocationService(locationDaoMock, commentDaoMock);
-		location=new LocationDTO(TEST_USERNAME, 0.0, 1.0, 45678);
+		location=new LocationDTO(1, TEST_USERNAME, 0.0, 1.0, 45678, Collections.<CommentDTO>emptyList());
 	}
 	
 	@Test

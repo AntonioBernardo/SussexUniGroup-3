@@ -3,7 +3,10 @@ package uk.ac.sussex.asegr3.tracker.client.transport;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.List;
 
+import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
+import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -27,7 +30,7 @@ public class HttpTransportClientApiFactory implements Serializable{
 
 		final String token = client.login(username, password);
 		
-		CURRENT_API =  new TokenBasedHttpTransportClientApi(client, token);
+		CURRENT_API =  new TokenBasedHttpTransportClientApi(username, client, token);
 			
 		return CURRENT_API;
 	}
@@ -36,7 +39,7 @@ public class HttpTransportClientApiFactory implements Serializable{
 
 		final String token = client.signupUser(username, password);
 		
-		CURRENT_API =  new TokenBasedHttpTransportClientApi(client, token);
+		CURRENT_API =  new TokenBasedHttpTransportClientApi(username, client, token);
 			
 		return CURRENT_API;
 	}
@@ -49,10 +52,12 @@ public class HttpTransportClientApiFactory implements Serializable{
 
 		private final HttpTransportClient client;
 		private final String token;
+		private final String loggedInUser;
 		
-		private TokenBasedHttpTransportClientApi(HttpTransportClient client, String token){
+		private TokenBasedHttpTransportClientApi(String loggedInUser, HttpTransportClient client, String token){
 			this.client = client;
 			this.token = token;
+			this.loggedInUser = loggedInUser;
 		}
 		@Override
 		public boolean processBatch(LocationBatch batch) {
@@ -63,6 +68,19 @@ public class HttpTransportClientApiFactory implements Serializable{
 		@Override
 		public boolean isReady() {
 			return client.isReady();
+		}
+		@Override
+		public List<LocationDto> getNearbyLocations() {
+			return client.retrieveLocationData(token);
+		}
+		
+		@Override
+		public boolean postComment(Comment comment){
+			return client.postComment(comment);
+		}
+		@Override
+		public String getLoggedInUser() {
+			return loggedInUser;
 		}
 		
 	}

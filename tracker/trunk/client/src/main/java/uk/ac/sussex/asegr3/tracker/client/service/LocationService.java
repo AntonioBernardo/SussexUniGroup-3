@@ -1,31 +1,42 @@
 package uk.ac.sussex.asegr3.tracker.client.service;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
-//import org.mockito.cglib.proxy.CallbackGenerator.Context;
-
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
+import uk.ac.sussex.asegr3.tracker.client.ui.FetchLocationCallBack;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
-
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+//import org.mockito.cglib.proxy.CallbackGenerator.Context;
 
 public class LocationService implements LocationListener {
 
+	private final FetchLocationCallBack fetchLocationCallBack;
 	private final List<LocationUpdateListener> listeners;
 	private final LocationManager locationManager;
 	private final int proximityDistance;
 	private final Logger logger;
 	private Location lastLocation = null;
+	private final HttpTransportClientApi transportApi;
+	private final Executor executor;
 
-	public LocationService(LocationManager locationManager, int proximityDistance, Logger logger) {
+	public LocationService(LocationManager locationManager, int proximityDistance, Logger logger, 
+			HttpTransportClientApi transportApi, Executor executor, FetchLocationCallBack fetchLocationCallBack) {
 		this.listeners = new LinkedList<LocationUpdateListener>();
 		this.locationManager = locationManager;
 		this.proximityDistance = proximityDistance;
 		this.logger = logger;
+		this.transportApi=transportApi;
+		this.executor=executor;
+		this.fetchLocationCallBack=fetchLocationCallBack;
+		
 	}
 
 	
@@ -34,8 +45,10 @@ public class LocationService implements LocationListener {
 		logger.debug(this.getClass(), "Registering with gps and network providers");
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, proximityDistance, this);
 		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, proximityDistance, this);
-		
-		
+	}
+	
+	public void getNearbyLocations(){
+		executor.execute(new NearbyLocationWorker(transportApi, logger, fetchLocationCallBack));
 	}
 	
 	public void stop(){
@@ -79,8 +92,8 @@ public class LocationService implements LocationListener {
 
 		if (locationValid) {
 			
-			notifyListeners(new LocationDto(location.getLatitude(),
-					location.getLongitude(), location.getTime()));
+			notifyListeners(new LocationDto(transportApi.getLoggedInUser(), location.getLatitude(),
+					location.getLongitude(), location.getTime(), Collections.<CommentDto>emptyList()));
 		}
 	}
 
@@ -134,5 +147,32 @@ public class LocationService implements LocationListener {
 	public boolean hasRequiredPermissions() {
 		return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
 				locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+	}
+	
+	private static class NearbyLocationWorker implements Runnable{
+		
+		private final HttpTransportClientApi api;
+		private final FetchLocationCallBack fetchLocationCallBack;
+		private final Logger logger;
+		
+		public NearbyLocationWorker(HttpTransportClientApi api, Logger logger,
+				FetchLocationCallBack fetchLocationCallBack){
+			this.api=api;
+			this.fetchLocationCallBack=fetchLocationCallBack;
+			this.logger=logger;
+		}
+
+		@Override
+		public void run() {
+			try{
+				List<LocationDto> locations=api.getNearbyLocations();
+				fetchLocationCallBack.processFetchLocations(locations);
+			}catch(Exception e){
+				logger.error(LocationService.class,  "error logging in: "+e.getMessage());
+				fetchLocationCallBack.processFetchFailed(e);
+			}
+			
+		}
+		
 	}
 }

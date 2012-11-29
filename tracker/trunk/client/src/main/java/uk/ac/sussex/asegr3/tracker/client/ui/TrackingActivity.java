@@ -1,10 +1,12 @@
 package uk.ac.sussex.asegr3.tracker.client.ui;
 
+import java.util.List;
+
+import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
-
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -14,9 +16,8 @@ import android.widget.Toast;
 
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
-import com.google.android.maps.OverlayItem;
 
-public class TrackingActivity extends MapActivity implements MapViewProvider {
+public class TrackingActivity extends MapActivity implements MapViewProvider, FetchLocationCallBack {
 
 
 	private static final int PERMISSION_GRANTED = 1;
@@ -44,15 +45,20 @@ public class TrackingActivity extends MapActivity implements MapViewProvider {
 		HttpTransportClientApi api = HttpTransportClientApiFactory.getCurrentApi();
 		DigitalClock clock = (DigitalClock) findViewById(R.id.digitalClock);
 		Intent trackingIntent = getIntent();
+		
+		
 
 		// TextView txtName = (TextView) findViewById(R.id.TextViewDisplay1);
 		// TextView txtEmail = (TextView) findViewById(R.id.TextViewDisplay2);
 		Intent i = getIntent();
 
-		new LocationServiceFactory().create(
+		LocationService locService=new LocationServiceFactory().create(
 				this, api, this, AndroidLogger.INSTANCE,
-				AsyncTask.SERIAL_EXECUTOR);
-
+				AsyncTask.SERIAL_EXECUTOR, this);
+		
+		
+		
+		
 		Button next = (Button) findViewById(R.id.button);
 
 		next.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +71,8 @@ public class TrackingActivity extends MapActivity implements MapViewProvider {
 		});
 		
 		this.mapViewManager=new MapViewManager(getMap(), this);
+		
+		locService.getNearbyLocations();
 	}
 	
 	@Override
@@ -80,6 +88,19 @@ public class TrackingActivity extends MapActivity implements MapViewProvider {
 	
 	public MapViewManager getMapViewManager(){
 		return this.mapViewManager;
+	}
+
+	@Override
+	public void processFetchLocations(List<LocationDto> locations) {
+		
+		mapViewManager.addSomePointsToMap(locations);
+		
+	}
+
+	@Override
+	public void processFetchFailed(Exception e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

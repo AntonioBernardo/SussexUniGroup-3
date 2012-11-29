@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS `tracker`.`user` (
+use trackertest;
+
+CREATE TABLE IF NOT EXISTS `user` (
 	`id` INT NOT NULL AUTO_INCREMENT ,
 	PRIMARY KEY (`id`) ,
 	`username` varchar(15) NOT NULL,
@@ -6,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `tracker`.`user` (
 );
 
 
-CREATE TABLE IF NOT EXISTS `tracker`.`location` (
+CREATE TABLE IF NOT EXISTS `location` (
 	`id` INT NOT NULL AUTO_INCREMENT ,
 	 PRIMARY KEY (`id`) ,
 	`fk_user_id` INT NOT NULL ,
@@ -19,23 +21,23 @@ ON UPDATE NO ACTION);
 
 
 
-CREATE  TABLE IF NOT EXISTS`tracker`.`comments` (
+CREATE  TABLE IF NOT EXISTS `comments` (
  
  	`id` INT NOT NULL AUTO_INCREMENT ,
   
    	PRIMARY KEY (`id`) ,
 
-  	`fK_use_id` INT NOT NULL ,
+  	`fk_user_id` INT NOT NULL ,
 
-	`fK_loc_id` INT NOT NULL ,
+	`fk_loc_id` INT NOT NULL ,
 
 	`comments` VARCHAR(50) NOT NULL , 
 
 	`image` BLOB NOT NULL , 
 
-	FOREIGN KEY (fK_use_id) REFERENCES user(id), 
+	FOREIGN KEY (fk_user_id) REFERENCES user(id), 
 
-	FOREIGN KEY (fK_loc_id) REFERENCES location(id) 
+	FOREIGN KEY (fk_loc_id) REFERENCES location(id) 
 
 ON DELETE NO ACTION
   ON UPDATE NO ACTION);

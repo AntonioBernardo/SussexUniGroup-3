@@ -74,7 +74,7 @@ public class CommentDaoUnitTest {
 		verify(preparedStatementMock, times(1)).setObject(4, TEST_IMAGE);
 	}
 }
-	class StatementsConnectionCaptor extends DelegatingConnection{
+class StatementsConnectionCaptor extends DelegatingConnection{
 	
 	private String capturedSql;
 	

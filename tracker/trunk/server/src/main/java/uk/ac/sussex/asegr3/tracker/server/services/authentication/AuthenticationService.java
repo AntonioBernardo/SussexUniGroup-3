@@ -87,7 +87,7 @@ public class AuthenticationService {
 		return result;
 	}
 
-	private String computePwHash(String password) {
+	public String computePwHash(String password) {
 
 		MessageDigest digest = DigestUtils.getSha256Digest();
 		// Update input string in message digest

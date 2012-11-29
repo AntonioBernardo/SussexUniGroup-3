@@ -5,7 +5,6 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-
 public class TransportLocationUnitTest {
 	
 	private static final double LATT_TEST=1234.567890;

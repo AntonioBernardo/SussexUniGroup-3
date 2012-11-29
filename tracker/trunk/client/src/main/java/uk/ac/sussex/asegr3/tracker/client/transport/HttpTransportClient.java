@@ -28,8 +28,10 @@ import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationRequest;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
+import uk.ac.sussex.asegr3.transport.beans.TransportErrorResponse;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
+import uk.ac.sussex.asegr3.transport.beans.TransportNewUserRequest;
 
 class HttpTransportClient implements Serializable{
 
@@ -37,6 +39,7 @@ class HttpTransportClient implements Serializable{
 	private final URI uri;
 	private final URL addBatchUri;
 	private final URL authenticateRequestUri;
+	private final URL addNewUserUri;
 	private final String hostname;
 	private final transient Logger logger;
 	private final transient NetworkInfoProvider networkInfoProvider;
@@ -48,6 +51,7 @@ class HttpTransportClient implements Serializable{
 		this.uri = new URI("http://"+this.hostname);
 		this.addBatchUri = new URL(uri.toString() +"/location/batch");
 		this.authenticateRequestUri = new URL(uri.toString()+"/user/");
+		this.addNewUserUri = new URL(uri.toString()+"/user/");
 		this.logger = logger;
 		this.networkInfoProvider = networkInfoProvider;
 		this.httpClientFactory = httpClientFactory;
@@ -66,12 +70,7 @@ class HttpTransportClient implements Serializable{
 		try{
 			Response response = postJsonData(authenticationPayload, new URL(authenticateRequestUri+username+"/authenticate"));
 			if (isResponseOk(response)){
-				TransportAuthenticationToken token = getTransportAuthenticationToken(response.getContent());
-				
-				String tokenStr = token.getToken(encoder);
-				setupToken(tokenStr);
-				
-				return tokenStr;
+				return extractTokenFromResponse(response);
 			} else{
 				throw new AuthenticationException(username, response.getStatusCode());
 			}
@@ -80,6 +79,65 @@ class HttpTransportClient implements Serializable{
 		}
 	}
 	
+	private String extractTokenFromResponse(Response response){
+		TransportAuthenticationToken token = getTransportAuthenticationToken(response.getContent());
+		
+		String tokenStr = token.getToken(encoder);
+		setupToken(tokenStr);
+		
+		return tokenStr;
+	}
+	
+	public String signupUser(String username, String password) throws NewUserSignupException{
+		// create transport object via getJsonPayloadForAuthenicationRequest
+		byte[] newUserPayload = getJsonPayloadForNewUserRequest(username, password);
+		
+		try{
+			Response response = postJsonData(newUserPayload, new URL(addNewUserUri+username));
+			if (!isResponseOk(response)){
+				throw new NewUserSignupException(getErrorMessage(response));
+			} else{
+				return extractTokenFromResponse(response);
+			}
+		} catch (IOException e){
+			throw new NewUserSignupException("Unable to communicate with server", e);
+		}
+	}
+	
+	private String getErrorMessage(Response response) {
+		if (!isResponseOk(response)){
+			TransportErrorResponse transportErrorResponse = getTransportErrorResponse(response.getContent());
+			if (transportErrorResponse != null){
+				return transportErrorResponse.getMessage();
+			}
+			return "Unknown error of type: "+response.getStatusCode();
+		}
+		return "";
+	}
+
+	private TransportErrorResponse getTransportErrorResponse(byte[] content) {
+		try {
+			JSONObject jsonObject = new JSONObject(new String(content, Charset.forName("UTF-8")));
+			TransportErrorResponse.ErrorCode errorCode = TransportErrorResponse.ErrorCode.valueOf(jsonObject.getString(TransportErrorResponse.ERROR_CODE));
+			String message = jsonObject.getString(TransportErrorResponse.MESSAGE_TAG);
+			
+			return new TransportErrorResponse(errorCode, message);
+		} catch (JSONException e) {
+			return null;
+		}
+	}
+
+	private byte[] getJsonPayloadForNewUserRequest(String username, String password) {
+		JSONObject jsonObject = new JSONObject();
+		try{
+			jsonObject.put(TransportNewUserRequest.USERNAME_TAG, username);
+			jsonObject.put(TransportNewUserRequest.PASSWORD_TAG, password);
+			return jsonObject.toString().getBytes(Charset.forName("UTF-8"));
+		} catch (JSONException e){
+			throw new RuntimeException("Unable to create the new user request", e);
+		}
+	}
+
 	private Response postJsonData(byte[] payload, URL url) throws IOException{
 		HttpURLConnection connection = httpClientFactory.createHttpConnection(url);
 		try{
@@ -100,24 +158,23 @@ class HttpTransportClient implements Serializable{
 		    }
 		    
 		    byte[] content;
+		    InputStream in;
 		    if (isStatusCodeOk(statusCode)){
-			    InputStream in = new BufferedInputStream(connection.getInputStream());
+			    in = new BufferedInputStream(connection.getInputStream());
 			   
-			    
-			    // now parse stream
-			    
-			    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-			    
-			    while(in.read(buffer) != -1){
-			    	baos.write(buffer);
-			    }
-			    content = baos.toByteArray();
 			} else{
-				content = new byte[]{};
+				in = new BufferedInputStream(connection.getErrorStream());
 			}
 		    
-			    
+		    // now parse stream
+		    
+		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+		    
+		    while(in.read(buffer) != -1){
+		    	baos.write(buffer);
+		    }
+		    content = baos.toByteArray();
 		    
 		    return new Response(connection.getResponseCode(), content);
 		} finally{
@@ -168,7 +225,7 @@ class HttpTransportClient implements Serializable{
 	
 	private TransportAuthenticationToken getTransportAuthenticationToken(byte[] token){
 		try {
-			JSONObject jsonObject = new JSONObject(new String(token));
+			JSONObject jsonObject = new JSONObject(new String(token, Charset.forName("UTF-8")));
 			String username = jsonObject.getString(TransportAuthenticationToken.USERNAME_TAG);
 			String signature = jsonObject.getString(TransportAuthenticationToken.SIGNATURE_TAG);
 			long expires = jsonObject.getLong(TransportAuthenticationToken.EXPIRES_TAG);

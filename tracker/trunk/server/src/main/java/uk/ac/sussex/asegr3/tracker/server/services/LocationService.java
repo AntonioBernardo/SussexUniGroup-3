@@ -45,9 +45,15 @@ public class LocationService {
 		double latMin = currentLocation.getLatitude() - DEFAULT_PROXIMITY;
 		double latMax = currentLocation.getLatitude() + DEFAULT_PROXIMITY;
 		
-		return null;
-		//dao.getLocations(currentLocation.getLatitude(), currentLocation.getLongitude(), currentLocation.getTimeStamp(), currentLocation.getLatMin(),currentLocation.getLatMax(),currentLocation.getLongMin(),currentLocation.getLongMax(),currentLocation.getTimeMin(),currentLocation.getTimeMax());
-		//(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax);
-	}
+		double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
+		double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
+		
+	
+	return dao.getLatestLocationForUser(latMin,latMax,longMin,longMax, 0, 0);
+	
+	//--latmin = currentlat - proximity
+	//--latmax = currentLat + proximity
 
+}
+	
 }

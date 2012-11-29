@@ -1,5 +1,17 @@
 package uk.ac.sussex.asegr3.tracker.client.service;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.Executor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,22 +20,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
-import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
-import uk.ac.sussex.asegr3.tracker.client.service.LocationUpdateListener;
+import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
+import uk.ac.sussex.asegr3.tracker.client.ui.FetchLocationCallBack;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
-
 import android.location.Location;
 import android.location.LocationManager;
-
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocationServiceUnitTest {
@@ -49,9 +50,19 @@ public class LocationServiceUnitTest {
 	@Mock
 	private Logger loggerMock;
 	
+	@Mock
+	private HttpTransportClientApi apiMock;
+	
+	@Mock
+	Executor executorMock;
+	
+	@Mock
+	FetchLocationCallBack fetchLocationCallBackMock;
+	
 	@Before
 	public void before(){
-		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE, loggerMock);
+		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE, loggerMock, apiMock,
+				executorMock, fetchLocationCallBackMock);
 		candidate.registerListener(locationUpdateListenerMock);
 		when(locationManagerMock.isProviderEnabled(LocationManager.GPS_PROVIDER)).thenReturn(true);
 		when(locationManagerMock.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).thenReturn(true);

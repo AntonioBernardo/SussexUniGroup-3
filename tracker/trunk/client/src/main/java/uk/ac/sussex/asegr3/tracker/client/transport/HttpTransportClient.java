@@ -16,6 +16,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +35,8 @@ import uk.ac.sussex.asegr3.transport.beans.TransportErrorResponse;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 import uk.ac.sussex.asegr3.transport.beans.TransportNewUserRequest;
+import uk.ac.sussex.asegr3.transport.beans.TransportUserLocation;
+import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
 
 class HttpTransportClient implements Serializable{
 
@@ -40,6 +45,7 @@ class HttpTransportClient implements Serializable{
 	private final URL addBatchUri;
 	private final URL authenticateRequestUri;
 	private final URL addNewUserUri;
+	private final URL getLocationDetailsUri;
 	private final String hostname;
 	private final transient Logger logger;
 	private final transient NetworkInfoProvider networkInfoProvider;
@@ -52,6 +58,7 @@ class HttpTransportClient implements Serializable{
 		this.addBatchUri = new URL(uri.toString() +"/location/batch");
 		this.authenticateRequestUri = new URL(uri.toString()+"/user/");
 		this.addNewUserUri = new URL(uri.toString()+"/user/");
+		this.getLocationDetailsUri=new URL(uri.toString()+"/location/nearby");
 		this.logger = logger;
 		this.networkInfoProvider = networkInfoProvider;
 		this.httpClientFactory = httpClientFactory;
@@ -151,32 +158,7 @@ class HttpTransportClient implements Serializable{
 		    out.write(payload);
 		    out.flush();
 		    
-		    int statusCode = connection.getResponseCode();
-		 // check for redirection.
-		    if (!url.getHost().equals(connection.getURL().getHost())) {
-		    	return new Response(connection.getResponseCode(), new byte[]{});
-		    }
-		    
-		    byte[] content;
-		    InputStream in;
-		    if (isStatusCodeOk(statusCode)){
-			    in = new BufferedInputStream(connection.getInputStream());
-			   
-			} else{
-				in = new BufferedInputStream(connection.getErrorStream());
-			}
-		    
-		    // now parse stream
-		    
-		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-		    
-		    while(in.read(buffer) != -1){
-		    	baos.write(buffer);
-		    }
-		    content = baos.toByteArray();
-		    
-		    return new Response(connection.getResponseCode(), content);
+		    return readResponse(connection, url);
 		} finally{
 			connection.disconnect();
 		}
@@ -203,6 +185,154 @@ class HttpTransportClient implements Serializable{
 	    return true;
 	}
 	
+	private Response getJsonData(URL url) throws IOException{
+		
+		HttpURLConnection connection = httpClientFactory.createHttpConnection(url);
+		try {
+		    connection.setRequestProperty("Content-Type", "application/json");
+		    connection.setRequestProperty("Accepts", "application/json");
+		    
+		    connection.setDoOutput(true);
+		    
+		    return readResponse(connection, url);
+		} finally {
+			connection.disconnect();
+		}
+	}
+		
+		private Response readResponse(HttpURLConnection connection, URL url) throws IOException{
+			byte[] content;
+		    InputStream in;
+		    int statusCode = connection.getResponseCode();
+			 // check for redirection.
+		    if (!url.getHost().equals(connection.getURL().getHost())) {
+		    	return new Response(connection.getResponseCode(), new byte[]{});
+		    }
+		    if (isStatusCodeOk(statusCode)){
+			    in = new BufferedInputStream(connection.getInputStream());
+			   
+			} else{
+				in = new BufferedInputStream(connection.getErrorStream());
+			}
+		    
+		    // now parse stream
+		    
+		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+		    
+		    while(in.read(buffer) != -1){
+		    	baos.write(buffer);
+		    }
+		    content = baos.toByteArray();
+		    
+		    return new Response(connection.getResponseCode(), content);
+			
+		}
+	
+	public List<LocationDto> retrieveLocationData(String token){
+		
+		List<LocationDto> locationDtos=new ArrayList<LocationDto>();
+		try{
+			Response response=getJsonData(getLocationDetailsUri);
+			
+			if (isResponseOk(response)){
+				TransportUserLocationCollection transportLocations = getUserLocationCollections(response.getContent());
+				
+				
+				
+				for (TransportUserLocation location: transportLocations.getLocations()){
+					LocationDto locationDto=new LocationDto(location.getLocation().getLattitude(), 
+							location.getLocation().getLongitude(), location.getLocation().getTimestamp());
+					
+					
+					locationDtos.add(locationDto);
+					
+				}
+			} else {
+				throw new FetchLocationException(getErrorMessage(response));
+			}
+			
+			
+		}
+		catch(Exception e){
+			
+		}
+		
+		return locationDtos;
+	}
+	
+	private TransportUserLocationCollection getUserLocationCollections(byte[] content) {
+		TransportUserLocationCollection collection=new TransportUserLocationCollection();
+		
+		try {
+			JSONObject jsonObject = new JSONObject(new String(content, Charset.forName("UTF-8")));
+			JSONArray locationsJson =jsonObject.getJSONArray(TransportUserLocationCollection.LOCATIONS_TAG);
+			
+			Collection<TransportUserLocation> locations =new ArrayList<TransportUserLocation>(locationsJson.length());
+			
+			for(int i=0;i<locationsJson.length(); i++){
+				
+				JSONObject locationJson=locationsJson.getJSONObject(i);
+				
+				TransportUserLocation location = convertTransportUserLocation(locationJson);
+				
+				locations.add(location);
+			}
+			
+			
+			
+		} catch (JSONException e) {
+			throw new RuntimeException("unable to parse JSON");
+		}
+		
+		
+		return collection;
+	}
+	
+	private TransportUserLocation convertTransportUserLocation(JSONObject locationJson){
+		
+		String username;
+		try {
+			username = locationJson.getString(TransportUserLocation.USERNAME_TAG);
+		} catch (JSONException e1) {
+			throw new RuntimeException("unable to parse JSON");
+		}
+		
+		JSONObject transportLocationJson;
+		try {
+			transportLocationJson = locationJson.getJSONObject(TransportUserLocation.LOCATION_TAG);
+		} catch (JSONException e) {
+			throw new RuntimeException("unable to parse JSON");
+		}
+		
+		TransportLocation transportLocation=extractTransportLocation(transportLocationJson);
+		
+		TransportUserLocation location=new TransportUserLocation(username, transportLocation);
+		
+		return location;
+	}
+	
+	private TransportLocation extractTransportLocation(JSONObject transportLocationJson){
+		
+		double lattitude=0.0;
+		double longitude=0.0;
+		long timestamp=0;
+		
+		try{
+			lattitude=transportLocationJson.getDouble(TransportLocation.LATTITUDE_TAG);
+			longitude=transportLocationJson.getDouble(TransportLocation.LONGITUDE_TAG);
+			timestamp=transportLocationJson.getLong(TransportLocation.TIMESTAMP_TAG);
+			
+		} catch(JSONException e){
+			throw new RuntimeException("unable to parse JSON");
+		}
+		
+		
+		TransportLocation location=new TransportLocation(lattitude, longitude, timestamp);
+		
+		return location;
+	}
+
 	private boolean isResponseOk(Response response) {
 		return isStatusCodeOk(response.getStatusCode());
 	}

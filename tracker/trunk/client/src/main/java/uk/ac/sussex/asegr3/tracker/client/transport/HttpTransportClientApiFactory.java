@@ -3,7 +3,9 @@ package uk.ac.sussex.asegr3.tracker.client.transport;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.List;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -63,6 +65,10 @@ public class HttpTransportClientApiFactory implements Serializable{
 		@Override
 		public boolean isReady() {
 			return client.isReady();
+		}
+		@Override
+		public List<LocationDto> getNearbyLocations() {
+			return client.retrieveLocationData(token);
 		}
 		
 	}

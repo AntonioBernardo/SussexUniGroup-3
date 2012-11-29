@@ -4,12 +4,14 @@ import java.util.List;
 
 import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
 import uk.ac.sussex.asegr3.tracker.client.dataobject.PersonPosition;
+import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.CommentItemizedOverlay;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.CurrentPositionItemizedOverlay;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.PositionsItemizedOverlay;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
@@ -61,6 +63,27 @@ public void addCommentsToMap(List<Comment> comments){
 	        
 	        mapView.getOverlays().add(currentPositionOverlay);
 		}
+	}
+	
+	public void addSomePointsToMap(List<LocationDto> locations){
+		
+		if(locations!=null && !locations.isEmpty()){
+			Drawable currentPositionIcon=context.getResources().getDrawable(R.drawable.current_position_icon);
+		
+			if(currentPositionOverlay==null)
+				currentPositionOverlay=new CurrentPositionItemizedOverlay(currentPositionIcon, context);  
+	        
+	        for(LocationDto position : locations){
+	        	GeoPoint geoPoint=new GeoPoint((int)(position.getLat()*1E6), (int)(position.getLng()*1E6));
+	        	OverlayItem item=new OverlayItem(geoPoint, new String(""+position.getTimestamp()), new String("Random"));
+//	        	OverlayItem item=new OverlayItem(position.getGeoPoint(), position.getUserName(), "Random");
+	    		currentPositionOverlay.addOverlay(item);
+	        }
+	        
+	        mapView.getOverlays().add(currentPositionOverlay);
+			
+		}
+		
 	}
 	
 	public void addPersonPositionsToMap(List<PersonPosition> positions){

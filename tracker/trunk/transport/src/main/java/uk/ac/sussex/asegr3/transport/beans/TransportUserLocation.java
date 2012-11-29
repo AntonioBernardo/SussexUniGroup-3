@@ -4,8 +4,8 @@ import javax.xml.bind.annotation.XmlElement;
 
 public class TransportUserLocation {
 	
-	private static final String USERNAME_TAG = "username";
-	private static final String LOCATION_TAG = "location";
+	public static final String USERNAME_TAG = "username";
+	public static final String LOCATION_TAG = "location";
 	
 	@XmlElement(name=USERNAME_TAG, required=true)
 	private String username;

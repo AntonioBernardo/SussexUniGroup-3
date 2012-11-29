@@ -1,10 +1,10 @@
 package uk.ac.sussex.asegr3.tracker.server.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
-
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 
@@ -50,6 +50,17 @@ public class LocationService {
 		
 		return null;
 		
+	}
+	
+	public List<LocationDTO> getLocationsForSpecificUser(String username){
+		
+		List<LocationDTO> locationDetails=dao.getAllLocationsForUser(username);
+		
+		if(locationDetails==null){
+			locationDetails=new ArrayList<LocationDTO>();
+		}
+		
+		return locationDetails;
 	}
 
 

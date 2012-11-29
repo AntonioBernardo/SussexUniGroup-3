@@ -16,12 +16,14 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
+import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.service.NewUserCallback;
 import uk.ac.sussex.asegr3.tracker.client.service.NewUserService;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.transport.AuthenticationException;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
+import uk.ac.sussex.asegr3.tracker.client.ui.FetchLocationCallBack;
 import uk.ac.sussex.asegr3.tracker.server.TrackerService;
 import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 
@@ -97,6 +99,30 @@ public class TrackerIntegrationTest {
 		}
 		LocationBatch testBatch = new LocationBatch(testLocations, 1);
 		assertThat(api.processBatch(testBatch), is(equalTo(true)));
+	}
+	
+	@Test
+	public void givenLocationsToFetch_whenCallingGetLocations_thenCorrectLocationsReturned() throws MalformedURLException, URISyntaxException, AuthenticationException{
+		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
+		
+		final AtomicBoolean processedFecthedLocations = new AtomicBoolean(false);
+		LocationService locationService = new LocationService(null, 1, null, apiFactory.create(TEST_USER_NAME, TEST_PASSWORD),SYNCHRONOUS_EXECUTOR, new FetchLocationCallBack() {
+			
+			@Override
+			public void processFetchLocations(List<LocationDto> locations) {
+				assertThat(locations, is(not(nullValue())));
+				assertThat(locations.size(), is(equalTo(1)));
+				processedFecthedLocations.set(true);
+			}
+			
+			@Override
+			public void processFetchFailed(Exception e) {
+				fail("error from request: "+ e.getMessage());
+			}
+		});
+		locationService.getNearbyLocations();
+		
+		assertThat(processedFecthedLocations.get(), is(equalTo(true)));
 	}
 	
 	@Test

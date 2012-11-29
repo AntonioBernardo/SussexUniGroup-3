@@ -37,6 +37,8 @@ public interface LocationDao {
 	  @SqlQuery(" select loc.id, u.username as as \"user\", loc.latitude as \"lat\",loc.longitude as \"long\", loc.timestamp_added as \"time\",com.comments as \"comments\" from user u, location loc, comments com	where u.id = loc.fk_user_id	and loc.id=com.fk_loc_id and loc.latitude between :latMin and :latMax and loc.longitude between :longMin and :longMax order by loc.timestamp_added desc limit 10")																																				
 	 List<LocationDTO> getLatestLocationForUser(double latMin, double latMax, double longMin, double longMax, long timeMin, long timeMax);
 
+	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and u.username=:username order by loc.timestamp_added desc")
+	 List<LocationDTO> getAllLocationsForUser(@Bind("username") String username);
 	  
 	 
 

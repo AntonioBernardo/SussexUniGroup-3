@@ -19,7 +19,7 @@ public class TransportUserLocationUnitTest {
 	
 	@Before
 	public void before(){
-		TransportLocation location = new TransportLocation(TEST_LAT, TEST_LONG, TEST_TIME);
+		TransportLocation location = new TransportLocation(1, TEST_LAT, TEST_LONG, TEST_TIME);
 		candidate = new TransportUserLocation(TEST_USERNAME, location, Collections.<TransportComment>emptyList());
 	}
 	

@@ -1,5 +1,6 @@
 package uk.ac.sussex.asegr3.tracker.client.location;
 
+import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -12,6 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Iterables;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 
@@ -34,6 +36,7 @@ public class LocationCacheUnitTest {
 	private static final long TEST_TIME = 0;
 	private static final double TEST_LONG = 0;
 	private static final double TEST_LAT = 0;
+	private static final String TEST_USER = "testUser";
 	
 	private LocationCache candidate;
 	
@@ -69,7 +72,7 @@ public class LocationCacheUnitTest {
 	public void givenConsumerAvailable_whenCallingNotifyNewLocationTenTimes_thenLocationIsNotifiedOnce(){
 		for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
-			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
+			LocationDto LocationDtoMock = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME+i, Collections.<CommentDto>emptyList());
 			candidate.notifyNewLocation(LocationDtoMock);
 		}
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
@@ -80,7 +83,7 @@ public class LocationCacheUnitTest {
 		for (int batchNum = 0; batchNum < 5; batchNum++){
 			for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 				verify(batchLocationConsumerMock, times(batchNum)).processBatch(any(LocationBatch.class));
-				LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
+				LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, TEST_TIME+i, Collections.<CommentDto>emptyList());
 				candidate.notifyNewLocation(LocationDtoMock);
 			}
 			verify(batchLocationConsumerMock, times(batchNum+1)).processBatch(any(LocationBatch.class));
@@ -93,7 +96,7 @@ public class LocationCacheUnitTest {
 		for (int batchNum = 0; batchNum < 5; batchNum++){
 			for (int i = 0; i < DEFAULT_BATCH_SIZE; i++){
 				verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
-				LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
+				LocationDto LocationDtoMock = new LocationDto(TEST_USER, TEST_LAT, TEST_LONG, TEST_TIME+i, Collections.<CommentDto>emptyList());
 				candidate.notifyNewLocation(LocationDtoMock);
 			}
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
@@ -105,7 +108,7 @@ public class LocationCacheUnitTest {
 		when(batchLocationConsumerMock.isReady()).thenReturn(false);
 		for (int i = 0; i < CACHE_LIMIT+5; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
-			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
+			LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, TEST_TIME+i, Collections.<CommentDto>emptyList());
 			candidate.notifyNewLocation(LocationDtoMock);
 			assertThat(candidate.getCacheSize() <= CACHE_LIMIT, is(equalTo(true)));
 		}
@@ -115,7 +118,7 @@ public class LocationCacheUnitTest {
 		
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
 		
-		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6);
+		LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(LocationDtoMock); // will trigger the callback
 		ArgumentCaptor<LocationBatch> captor = ArgumentCaptor.forClass(LocationBatch.class);
 		verify(batchLocationConsumerMock, times(1)).processBatch(captor.capture());
@@ -130,7 +133,7 @@ public class LocationCacheUnitTest {
 		when(batchLocationConsumerMock.isReady()).thenReturn(false);
 		for (int i = 0; i < CACHE_LIMIT+5; i++){
 			verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
-			LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+i);
+			LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, TEST_TIME+i, Collections.<CommentDto>emptyList());
 			candidate.notifyNewLocation(LocationDtoMock);
 		}
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
@@ -139,7 +142,7 @@ public class LocationCacheUnitTest {
 		
 		when(batchLocationConsumerMock.isReady()).thenReturn(true);
 		ArgumentCaptor<LocationBatch> capture = ArgumentCaptor.forClass(LocationBatch.class);
-		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6);
+		LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, TEST_TIME+CACHE_LIMIT+6, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(LocationDtoMock); // will trigger the callback
 		
 		verify(batchLocationConsumerMock, times(1)).processBatch(capture.capture());
@@ -154,12 +157,12 @@ public class LocationCacheUnitTest {
 	public void givenConsumerAvailableAndLocationsWithTimesGreaterTheLimit_whenCallingNotifyNewLocation_thenLocationsAreNotified(){
 		long currentTime = System.currentTimeMillis();
 		
-		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, currentTime);
+		LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, currentTime, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(LocationDtoMock);
 		
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
-		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
+		LocationDto nextDto = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(nextDto);
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
 		assertThat(candidate.getCacheSize(), is(equalTo(0)));
@@ -170,12 +173,12 @@ public class LocationCacheUnitTest {
 		when(batchLocationConsumerMock.processBatch(any(LocationBatch.class))).thenReturn(false);
 		long currentTime = System.currentTimeMillis();
 		
-		LocationDto LocationDtoMock = new LocationDto(TEST_LAT, TEST_LONG, currentTime);
+		LocationDto LocationDtoMock = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, currentTime, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(LocationDtoMock);
 		
 		verify(batchLocationConsumerMock, never()).processBatch(any(LocationBatch.class));
 		
-		LocationDto nextDto = new LocationDto(TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME);
+		LocationDto nextDto = new LocationDto(TEST_USER,TEST_LAT, TEST_LONG, currentTime+CACHE_FLUSH_TIME, Collections.<CommentDto>emptyList());
 		candidate.notifyNewLocation(nextDto);
 		verify(batchLocationConsumerMock, times(1)).processBatch(any(LocationBatch.class));
 		

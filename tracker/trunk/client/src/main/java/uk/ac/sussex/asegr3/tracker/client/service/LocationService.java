@@ -1,9 +1,11 @@
 package uk.ac.sussex.asegr3.tracker.client.service;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.ui.FetchLocationCallBack;
@@ -90,8 +92,8 @@ public class LocationService implements LocationListener {
 
 		if (locationValid) {
 			
-			notifyListeners(new LocationDto(location.getLatitude(),
-					location.getLongitude(), location.getTime()));
+			notifyListeners(new LocationDto(transportApi.getLoggedInUser(), location.getLatitude(),
+					location.getLongitude(), location.getTime(), Collections.<CommentDto>emptyList()));
 		}
 	}
 
@@ -166,7 +168,7 @@ public class LocationService implements LocationListener {
 				List<LocationDto> locations=api.getNearbyLocations();
 				fetchLocationCallBack.processFetchLocations(locations);
 			}catch(Exception e){
-				logger.error(LocationService.class,  "error logging in: "+e);
+				logger.error(LocationService.class,  "error logging in: "+e.getMessage());
 				fetchLocationCallBack.processFetchFailed(e);
 			}
 			

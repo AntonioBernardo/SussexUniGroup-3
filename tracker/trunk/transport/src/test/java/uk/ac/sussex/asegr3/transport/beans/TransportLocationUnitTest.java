@@ -15,7 +15,7 @@ public class TransportLocationUnitTest {
 	
 	@Before
 	public void before(){	
-		this.candidate=new TransportLocation(LATT_TEST, LONG_TEST, TIME_TEST);
+		this.candidate=new TransportLocation(1, LATT_TEST, LONG_TEST, TIME_TEST);
 	}
 
 	

@@ -56,6 +56,11 @@ public class LoginServiceFactory {
 		public String encode(byte[] bytes) {
 			return Base64.encodeToString(bytes, Base64.DEFAULT);
 		}
+
+		@Override
+		public byte[] decode(String code) {
+			return Base64.decode(code, Base64.DEFAULT);
+		}
 		
 	}
 }

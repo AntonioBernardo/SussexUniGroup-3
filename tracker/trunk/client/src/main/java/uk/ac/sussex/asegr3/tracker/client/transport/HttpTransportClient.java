@@ -18,12 +18,15 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
@@ -31,6 +34,7 @@ import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 import uk.ac.sussex.asegr3.transport.beans.Base64Encoder;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationRequest;
 import uk.ac.sussex.asegr3.transport.beans.TransportAuthenticationToken;
+import uk.ac.sussex.asegr3.transport.beans.TransportComment;
 import uk.ac.sussex.asegr3.transport.beans.TransportErrorResponse;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
@@ -144,6 +148,8 @@ class HttpTransportClient implements Serializable{
 			throw new RuntimeException("Unable to create the new user request", e);
 		}
 	}
+	
+	
 
 	private Response postJsonData(byte[] payload, URL url) throws IOException{
 		HttpURLConnection connection = httpClientFactory.createHttpConnection(url);
@@ -163,6 +169,15 @@ class HttpTransportClient implements Serializable{
 			connection.disconnect();
 		}
 	}
+	
+	public boolean postComment(Comment comment){
+		
+		//byte[] payload = getJsonPayloadForComment(comment);
+		
+		return true;
+	}
+	
+
 
 	public boolean processBatch(String token, LocationBatch batch) {
 		// Create a new HttpClient and Post Header
@@ -238,11 +253,15 @@ class HttpTransportClient implements Serializable{
 			if (isResponseOk(response)){
 				TransportUserLocationCollection transportLocations = getUserLocationCollections(response.getContent());
 				
-				
-				
 				for (TransportUserLocation location: transportLocations.getLocations()){
-					LocationDto locationDto=new LocationDto(location.getLocation().getLattitude(), 
-							location.getLocation().getLongitude(), location.getLocation().getTimestamp());
+					
+					List<CommentDto> comments = new ArrayList<CommentDto>(location.getComments().size());
+					
+					for (TransportComment transportComment: location.getComments()){
+						comments.add(new CommentDto(transportComment.getPoster(), transportComment.getText(), transportComment.getTimestamp()));
+					}
+					LocationDto locationDto=new LocationDto(location.getUsername(), location.getLocation().getLattitude(), 
+							location.getLocation().getLongitude(), location.getLocation().getTimestamp(), comments);
 					
 					
 					locationDtos.add(locationDto);
@@ -255,7 +274,7 @@ class HttpTransportClient implements Serializable{
 			
 		}
 		catch(Exception e){
-			
+			throw new RuntimeException("error parsing json", e);
 		}
 		
 		return locationDtos;
@@ -279,7 +298,7 @@ class HttpTransportClient implements Serializable{
 				locations.add(location);
 			}
 			
-			
+			collection.setLocations(locations);
 			
 		} catch (JSONException e) {
 			throw new RuntimeException("unable to parse JSON");
@@ -295,21 +314,66 @@ class HttpTransportClient implements Serializable{
 		try {
 			username = locationJson.getString(TransportUserLocation.USERNAME_TAG);
 		} catch (JSONException e1) {
-			throw new RuntimeException("unable to parse JSON");
+			throw new RuntimeException("unable to parse JSON", e1);
 		}
 		
 		JSONObject transportLocationJson;
 		try {
 			transportLocationJson = locationJson.getJSONObject(TransportUserLocation.LOCATION_TAG);
 		} catch (JSONException e) {
-			throw new RuntimeException("unable to parse JSON");
+			throw new RuntimeException("unable to parse JSON", e);
 		}
 		
 		TransportLocation transportLocation=extractTransportLocation(transportLocationJson);
 		
-		TransportUserLocation location=new TransportUserLocation(username, transportLocation);
+		Collection<TransportComment> transportComments=extractTransportComments(transportLocationJson);
+		
+		TransportUserLocation location=new TransportUserLocation(username, transportLocation, transportComments);
 		
 		return location;
+	}
+	
+	private Collection<TransportComment> extractTransportComments(JSONObject transportLocationJson){
+				
+		try {
+			Collection<TransportComment> transportComments;
+			JSONArray transportCommentsJson=transportLocationJson.optJSONArray(TransportUserLocation.COMMENTS_TAG);
+			if (transportCommentsJson != null){
+				transportComments=new ArrayList<TransportComment>(transportCommentsJson.length());
+				
+				for(int i =0; i<transportCommentsJson.length(); i++){
+					JSONObject transportCommentJson=transportCommentsJson.getJSONObject(i);
+					
+					TransportComment comment=convertTransportComment(transportCommentJson);
+					
+					transportComments.add(comment);
+					
+				}
+			} else {
+				transportComments = new LinkedList<TransportComment>();
+			}
+			return transportComments;
+		} catch (JSONException e) {
+			throw new RuntimeException("unable to parse JSON", e);
+		}
+	}
+	
+	private TransportComment convertTransportComment(JSONObject transportCommentJson){
+		
+		try {
+			String poster=transportCommentJson.getString(TransportComment.POSTER_TAG);
+			String text=transportCommentJson.getString(TransportComment.TEXT_TAG);
+			int id=transportCommentJson.getInt(TransportComment.LOCATION_ID_TAG);
+			long timestamp=transportCommentJson.getLong(TransportComment.TIMESTAMP_TAG);
+			byte[] image=encoder.decode(transportCommentJson.getString(TransportComment.IMAGE_TAG));
+			
+			TransportComment transportComment=new TransportComment(poster, text, id, image, timestamp);
+			
+			return transportComment;
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			throw new RuntimeException("unable to parse JSON", e);
+		}
 	}
 	
 	private TransportLocation extractTransportLocation(JSONObject transportLocationJson){
@@ -317,8 +381,11 @@ class HttpTransportClient implements Serializable{
 		double lattitude=0.0;
 		double longitude=0.0;
 		long timestamp=0;
+		int id=0;
+		
 		
 		try{
+			id=transportLocationJson.getInt(TransportLocation.ID_TAG);
 			lattitude=transportLocationJson.getDouble(TransportLocation.LATTITUDE_TAG);
 			longitude=transportLocationJson.getDouble(TransportLocation.LONGITUDE_TAG);
 			timestamp=transportLocationJson.getLong(TransportLocation.TIMESTAMP_TAG);
@@ -328,7 +395,7 @@ class HttpTransportClient implements Serializable{
 		}
 		
 		
-		TransportLocation location=new TransportLocation(lattitude, longitude, timestamp);
+		TransportLocation location=new TransportLocation(id, lattitude, longitude, timestamp);
 		
 		return location;
 	}
@@ -367,6 +434,15 @@ class HttpTransportClient implements Serializable{
 		
 	}
 	
+//	private byte[] getJsonPayloadForComment(Comment comment){
+//		
+//		JSONObject jsonObject = new JSONObject();
+//		try{
+//			jsonObject.put(TransportComment.LOCATION_ID_TAG, comment.getGeoPoint());
+//		}
+//		
+//	}
+	
 	private byte[] getJsonPayloadForAuthenicationRequest(String password){
 		// return json byte for TransportAuthenicationRequest
 		
@@ -400,6 +476,8 @@ class HttpTransportClient implements Serializable{
 		return jsonObject.toString().getBytes(Charset.forName("UTF-8"));
 	}
 
+	
+	
 	public boolean isReady() {
 		return networkInfoProvider.getNetworkInfo().isAvailable();
 	}

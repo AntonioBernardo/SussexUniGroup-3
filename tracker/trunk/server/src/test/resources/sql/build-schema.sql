@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `location` (
 ON UPDATE NO ACTION);
 
 CREATE  TABLE IF NOT EXISTS `comments` (
+
  	`id` INT NOT NULL AUTO_INCREMENT ,
    	PRIMARY KEY (`id`) ,
   	`fk_user_id` INT NOT NULL ,

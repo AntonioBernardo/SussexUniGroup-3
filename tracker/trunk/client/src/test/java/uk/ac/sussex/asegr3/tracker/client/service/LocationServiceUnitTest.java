@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.concurrent.Executor;
 
 import org.junit.Before;
@@ -19,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.ui.FetchLocationCallBack;
@@ -38,6 +40,8 @@ public class LocationServiceUnitTest {
 	private static final Float GOOD_ACCURACY = 10f;
 
 	private static final int TEST_PROXIMITY_DISTANCE = 10;
+
+	private static final String TEST_USER = "testUser";
 
 	private LocationService candidate;
 	
@@ -81,7 +85,7 @@ public class LocationServiceUnitTest {
 		//when(locationManagerMock.getLastKnownLocation(LocationManager.GPS_PROVIDER)).thenReturn(androidLocationMock);
 		
 		candidate.onLocationChanged(androidLocationMock);
-		LocationDto expectedLocationDto = new LocationDto(TEST_LOCATION_LAT,TEST_LOCATION_LONG,TEST_LOCATION_TIME);
+		LocationDto expectedLocationDto = new LocationDto(TEST_USER, TEST_LOCATION_LAT,TEST_LOCATION_LONG,TEST_LOCATION_TIME, Collections.<CommentDto>emptyList());
 		
 		//want to verify if actually  fails
 		
@@ -101,7 +105,7 @@ public class LocationServiceUnitTest {
 		when(androidLocationMock.getAccuracy()).thenReturn(GOOD_ACCURACY);
 		
 		candidate.onLocationChanged(androidLocationMock);
-		LocationDto expectedLocationDto = new LocationDto(TEST_LOCATION_LAT, TEST_LOCATION_LONG, TEST_LOCATION_TIME);
+		LocationDto expectedLocationDto = new LocationDto(TEST_USER, TEST_LOCATION_LAT, TEST_LOCATION_LONG, TEST_LOCATION_TIME, Collections.<CommentDto>emptyList());
 		
 		
 	}
@@ -122,7 +126,7 @@ public class LocationServiceUnitTest {
 		when(androidLocationMock.getAccuracy()).thenReturn(GOOD_ACCURACY);
 		
 		candidate.onLocationChanged(androidLocationMock);
-		LocationDto expectedLocationDto = new LocationDto(TEST_LOCATION_LAT, TEST_LOCATION_LONG, TEST_LOCATION_TIME);
+		LocationDto expectedLocationDto = new LocationDto(TEST_USER, TEST_LOCATION_LAT, TEST_LOCATION_LONG, TEST_LOCATION_TIME, Collections.<CommentDto>emptyList());
 		
 		verify(locationUpdateListenerMock, times(1)).notifyNewLocation(expectedLocationDto);
 	
@@ -181,7 +185,7 @@ public class LocationServiceUnitTest {
 		
 		candidate.onLocationChanged(nearLocation);
 		
-		LocationDto expectedLocationDto = new LocationDto(TEST_LOCATION_LAT+3, TEST_LOCATION_LONG+TEST_PROXIMITY_DISTANCE, TEST_LOCATION_TIME+1000);
+		LocationDto expectedLocationDto = new LocationDto(TEST_USER, TEST_LOCATION_LAT+3, TEST_LOCATION_LONG+TEST_PROXIMITY_DISTANCE, TEST_LOCATION_TIME+1000, Collections.<CommentDto>emptyList());
 		ArgumentCaptor<LocationDto> capture = ArgumentCaptor.forClass(LocationDto.class);
 		verify(locationUpdateListenerMock, times(1)).notifyNewLocation(capture.capture()); // still only called once.
 		

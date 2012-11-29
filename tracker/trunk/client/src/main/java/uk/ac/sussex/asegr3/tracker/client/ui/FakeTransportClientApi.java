@@ -2,6 +2,7 @@ package uk.ac.sussex.asegr3.tracker.client.ui;
 
 import java.util.List;
 
+import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
@@ -24,6 +25,17 @@ public class FakeTransportClientApi implements HttpTransportClientApi {
 	public List<LocationDto> getNearbyLocations() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public boolean postComment(Comment comment) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String getLoggedInUser() {
+		return "";
 	}
 
 }

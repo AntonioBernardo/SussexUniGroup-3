@@ -1,6 +1,6 @@
 package uk.ac.sussex.asegr3.tracker.server.services;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -47,9 +47,7 @@ public class LocationService {
 		
 		double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
 		double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
-		
 	
-		return dao.getNearbyLocations(username, latMin, latMax, longMax, longMin, DEFAULT_LIMIT);
+		return dao.getNearbyLocations(username, latMin, latMax, longMin, longMax, DEFAULT_LIMIT);
 	}
-	
 }

@@ -23,7 +23,23 @@ public interface LocationDao {
 	  @SqlBatch("insert into location (fk_user_id, latitude, longitude, timestamp_added) values ((select id from user where username=:username), :latitude, :longitude, :timestamp)")
 	  void insert(@Bind("username") String username, @BindBean Iterable<LocationDTO> inserts);
 	  
-	  @SqlQuery("select u.username as \"user\", loc.latitude as \"lat\", loc.longitude as \"long\", loc.timestamp_added as \"time\" from user u, location loc where u.id = loc.fk_user_id and u.username=:username order by loc.timestamp_added desc limit 1")
+	  @SqlQuery("select * from " +
+	  							"(select locuser.username as \"locuser\", " +
+	  							"l.fk_user_id, " +
+	  							"l.id, l.latitude, " +
+	  							"l.longitude, " +
+	  							"l.timestamp_added as \"loctimestamp\", " +
+	  							"c.comments, " +
+	  							"c.image, " +
+	  							"c.timestamp_added as \"comtimestamp\", " +
+	  							"comuser.username as \"comuser\" " +
+	  							"from user locuser, " +
+	  							"location l left outer join comments c on l.id = c.fk_loc_id " +
+	  							"left outer join user comuser on c.fk_user_id = comuser.id " +
+	  							"where l.fk_user_id = locuser.id " +
+	  							"order by l.timestamp_added desc) " +
+	  					"orderedLocs where " +
+	  					"locuser = :username limit 1")
 	  LocationDTO getLatestLocationForUser(@Bind("username") String username);
 	  
 
@@ -36,13 +52,13 @@ public interface LocationDao {
 	  							"l.timestamp_added as \"loctimestamp\", " +
 	  							"c.comments, " +
 	  							"c.image, " +
-	  							"c.timestamp_added as \"comtimestamp\"" +
+	  							"c.timestamp_added as \"comtimestamp\", " +
 	  							"comuser.username as \"comuser\" " +
 	  							"from user locuser, " +
 	  							"location l left outer join comments c on l.id = c.fk_loc_id " +
 	  							"left outer join user comuser on c.fk_user_id = comuser.id " +
 	  							"where l.fk_user_id = locuser.id " +
-	  							"order by timestamp_added desc) " +
+	  							"order by l.timestamp_added desc) " +
 	  					"orderedLocs where " +
 	  					"longitude between :longMin and :longMax " +
 	  					"and latitude between :latMin and :latMax " +
@@ -58,7 +74,7 @@ public interface LocationDao {
 			  			"l.timestamp_added as \"loctimestamp\", " +
 			  			"c.comments, " +
 			  			"c.image, " +
-			  			"c.timestamp_added as \"comtimestamp\"" +
+			  			"c.timestamp_added as \"comtimestamp\", " +
 			  			"comuser.username as \"comuser\" " +
 			  			"from user locuser, " +
 			  			"location l, " +
@@ -70,8 +86,6 @@ public interface LocationDao {
 			  			"and longitude between :longMin and :longMax " +
 			  			"and latitude between :latMin and :latMax) " +
 			  	"unlimited limit :rowLimit")
-	  Set<LocationDTO> getNearbyLocations(@Bind("currentuser") String currentUsername, @Bind("latMin") double latMin, @Bind("latMax") double latMax, @Bind("longMin") double longMax, @Bind("longMax") double longMin, @Bind("rowLimit") int limit);
-
-	  
+	  Set<LocationDTO> getNearbyLocations(@Bind("currentuser") String currentUsername, @Bind("latMin") double latMin, @Bind("latMax") double latMax, @Bind("longMin") double longMin, @Bind("longMax") double longMax, @Bind("rowLimit") int limit);
 }
 

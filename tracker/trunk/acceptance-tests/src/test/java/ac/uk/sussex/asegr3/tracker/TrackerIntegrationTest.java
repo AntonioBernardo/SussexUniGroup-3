@@ -3,6 +3,7 @@ package ac.uk.sussex.asegr3.tracker;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
@@ -50,6 +52,11 @@ public class TrackerIntegrationTest {
 			@Override
 			public String encode(byte[] bytes) {
 				return Base64.encodeBase64String(bytes);
+			}
+
+			@Override
+			public byte[] decode(String code) {
+				return Base64.decodeBase64(code);
 			}
 			
 		};
@@ -95,7 +102,7 @@ public class TrackerIntegrationTest {
 		
 		List<LocationDto> testLocations = new ArrayList<LocationDto>();
 		for (int i = 0; i < 5; i++){
-			testLocations.add(new LocationDto(4565+i, 2332-i, 123456+i));
+			testLocations.add(new LocationDto(TEST_USER_NAME, 4565+i, 2332-i, 123456+i, Collections.<CommentDto>emptyList()));
 		}
 		LocationBatch testBatch = new LocationBatch(testLocations, 1);
 		assertThat(api.processBatch(testBatch), is(equalTo(true)));
@@ -106,12 +113,12 @@ public class TrackerIntegrationTest {
 		HttpTransportClientApiFactory apiFactory = HttpTransportClientApiFactory.create(LOCAL_ADDRESS, CLIENT_LOGGER, ALWAYS_ON_NETWORK_PROVIDER, BASE_64_ENCODER);
 		
 		final AtomicBoolean processedFecthedLocations = new AtomicBoolean(false);
-		LocationService locationService = new LocationService(null, 1, null, apiFactory.create(TEST_USER_NAME, TEST_PASSWORD),SYNCHRONOUS_EXECUTOR, new FetchLocationCallBack() {
+		LocationService locationService = new LocationService(null, 1, CLIENT_LOGGER, apiFactory.create(TEST_USER_NAME, TEST_PASSWORD),SYNCHRONOUS_EXECUTOR, new FetchLocationCallBack() {
 			
 			@Override
 			public void processFetchLocations(List<LocationDto> locations) {
 				assertThat(locations, is(not(nullValue())));
-				assertThat(locations.size(), is(equalTo(1)));
+				assertThat(locations.size(), is(equalTo(3)));
 				processedFecthedLocations.set(true);
 			}
 			

@@ -21,7 +21,7 @@ public class LocationDTO {
 	}
 
 
-	private void setId(int id2) {
+	private void setId(int id) {
 		this.id = id;
 	}
 

@@ -1,15 +1,21 @@
 package uk.ac.sussex.asegr3.tracker.client.dto;
 
+import java.util.Collection;
+
 public class LocationDto implements Comparable<LocationDto>{
 
+	private final String username;
+	private final Collection<CommentDto> comments;
 	private final double lat;
 	private final double lng;
 	private final long timestamp;
 	
-	public LocationDto(double lat, double lng, long timestamp){
+	public LocationDto(String username, double lat, double lng, long timestamp, Collection<CommentDto> comments){
 		this.lat = lat;
 		this.lng = lng;
 		this.timestamp = timestamp;
+		this.username = username;
+		this.comments = comments;
 	}
 
 	public double getLat() {

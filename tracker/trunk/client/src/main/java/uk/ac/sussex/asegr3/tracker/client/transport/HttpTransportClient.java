@@ -91,10 +91,12 @@ class HttpTransportClient implements Serializable{
 	}
 	
 	private String extractTokenFromResponse(Response response){
+		
+		System.out.println(new String(response.getContent()));
 		TransportAuthenticationToken token = getTransportAuthenticationToken(response.getContent());
 		
 		String tokenStr = token.getToken(encoder);
-		setupToken(tokenStr);
+		setupToken(tokenStr.replaceAll("\n", ""));
 		
 		return tokenStr;
 	}
@@ -206,8 +208,6 @@ class HttpTransportClient implements Serializable{
 		try {
 		    connection.setRequestProperty("Content-Type", "application/json");
 		    connection.setRequestProperty("Accepts", "application/json");
-		    
-		    connection.setDoOutput(true);
 		    
 		    return readResponse(connection, url);
 		} finally {
@@ -410,14 +410,15 @@ class HttpTransportClient implements Serializable{
 
 	private void setupToken(String token) {
 		
+		System.out.println("setting token: "+token+" against cookie manager");
 		 CookieManager cookieManager = new CookieManager();
 		 CookieHandler.setDefault(cookieManager);
 		 
 		 HttpCookie cookie = new HttpCookie(TransportAuthenticationToken.AUTHENTICATION_SIGNATURE_COOKIE_NAME, token);
-		 cookie.setDomain(hostname);
+		 cookie.setDomain(hostname.split(":")[0]);
 		 cookie.setPath("/");
 		 cookie.setVersion(0);
-		 cookieManager.getCookieStore().add(uri, cookie);
+		 cookieManager.getCookieStore().add(null, cookie);
 	}
 	
 	private TransportAuthenticationToken getTransportAuthenticationToken(byte[] token){

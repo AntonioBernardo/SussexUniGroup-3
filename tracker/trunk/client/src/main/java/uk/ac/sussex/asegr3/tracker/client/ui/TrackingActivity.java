@@ -92,6 +92,8 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 
 	@Override
 	public void processFetchLocations(List<LocationDto> locations) {
+		System.out.println("In processFetchLocations");
+		System.out.println("Location size" + locations.size());
 		
 		mapViewManager.addSomePointsToMap(locations);
 		
@@ -99,7 +101,7 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 
 	@Override
 	public void processFetchFailed(Exception e) {
-		// TODO Auto-generated method stub
+		throw new RuntimeException(e);
 		
 	}
 	

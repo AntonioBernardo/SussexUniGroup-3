@@ -1,7 +1,10 @@
 package uk.ac.sussex.asegr3.tracker.server.api;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,6 +23,7 @@ import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportComment;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
+import uk.ac.sussex.asegr3.transport.beans.TransportUserLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
 
 @Path("/location")
@@ -38,7 +42,7 @@ public class LocationResource {
 	public void addLocation(@Auth LoggedInUser user, TransportLocation location){
 		
 		LocationDTO locationDetails=
-				new LocationDTO(user.getUsername(), location.getLattitude(), location.getLongitude(), location.getTimestamp());
+				new LocationDTO(-1, user.getUsername(), location.getLattitude(), location.getLongitude(), location.getTimestamp(), Collections.<CommentDTO>emptyList());
 		
 		locationService.storeLocation(user.getUsername(), locationDetails);
 		
@@ -51,8 +55,8 @@ public class LocationResource {
 		List<LocationDTO> locations=new ArrayList<LocationDTO>();
 		
 		for(TransportLocation transportLocation : transportLocations.getLocations()){
-			LocationDTO locationDetails=new LocationDTO(user.getUsername(), transportLocation.getLattitude(), 
-					transportLocation.getLongitude(), transportLocation.getTimestamp());
+			LocationDTO locationDetails=new LocationDTO(-1, user.getUsername(), transportLocation.getLattitude(), 
+					transportLocation.getLongitude(), transportLocation.getTimestamp(), Collections.<CommentDTO>emptyList());
 			
 			locations.add(locationDetails);
 		}
@@ -60,10 +64,22 @@ public class LocationResource {
 		locationService.storeLocations(user.getUsername(), locations);
 	}
 	
+	private TransportLocation map(LocationDTO location){
+		double lat = location.getLatitude();
+		double lng = location.getLongitude();
+		long timestamp = location.getTimestamp();
+		
+		return new TransportLocation(location.getId(), lat, lng, timestamp);
+	}
+	
+	private TransportComment map(CommentDTO comment) {
+		return new TransportComment(comment.getUsername(), comment.getText(), comment.getLocationID(), comment.getImage(), comment.getTimestamp());
+	}
+
 	@POST
 	@Path("/${locationId}/comment")
-	public void addComment(@PathParam("locationId") int locationId, TransportComment transportComment){
-		CommentDTO commentDTO = new CommentDTO(transportComment.getText(), locationId, transportComment.getImage());
+	public void addComment(@Auth LoggedInUser poster, @PathParam("locationId") int locationId, TransportComment transportComment){
+		CommentDTO commentDTO = new CommentDTO(poster.getUsername(), transportComment.getText(), locationId, transportComment.getImage(), System.currentTimeMillis());
 		
 		locationService.addComment(commentDTO);
 	}
@@ -72,8 +88,19 @@ public class LocationResource {
 	@Path("/nearby")
 	public TransportUserLocationCollection getNearbyLocations(@Auth LoggedInUser user){
 		
-		locationService.getNearbyLocations(user.getUsername());
+		Set<LocationDTO> locations = locationService.getNearbyLocations(user.getUsername());
 		
-		return null;
+		TransportUserLocationCollection transportLocationCollection = new TransportUserLocationCollection();
+		for (LocationDTO location: locations){
+			Collection<TransportComment> transportComments = new ArrayList<TransportComment>(location.getComments().size());
+			
+			for (CommentDTO comment: location.getComments()){
+				transportComments.add(map(comment));
+			}
+			TransportUserLocation transportLocation = new TransportUserLocation(location.getUsername(), map(location), transportComments);
+			transportLocationCollection.getLocations().add(transportLocation);
+			
+		}
+		return transportLocationCollection;
 	}
 }

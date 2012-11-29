@@ -23,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.skife.jdbi.v2.DBI;
 
-import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CommentDaoUnitTest {
@@ -31,7 +30,8 @@ public class CommentDaoUnitTest {
 	private static final String TEST_TEXT = "testtext";
 	private static final int TEST_LOCATION = 98453;
 	private static final byte[] TEST_IMAGE = new byte[]{0,2,4,5,6};
-	private static final String EXPECTED_SQL = "insert into comment (fk_user_id, text, location_id, image) values ((select id from user where username=?), ?, ?, ?)";
+	private static final String EXPECTED_SQL = "insert into comment (fk_user_id, text, location_id, image, timestamp_added) values ((select id from user where username=?), ?, ?, ?, ?)";
+	private static final long TEST_TIMESTAMP = 4564576;
 
 	private CommentDao candidate;
 	
@@ -63,7 +63,7 @@ public class CommentDaoUnitTest {
 	
 	@Test
 	public void givenValidComment_whenCallingInsert_thenCorrectSqlGenerated() throws SQLException{
-		candidate.insert(TEST_USER, TEST_TEXT, TEST_LOCATION, TEST_IMAGE);
+		candidate.insert(TEST_USER, TEST_TEXT, TEST_LOCATION, TEST_IMAGE, TEST_TIMESTAMP);
 		
 		verify(preparedStatementMock, times(1)).execute();
 		assertThat(connectionCaptor.getCapturedSql(), is(equalTo(EXPECTED_SQL)));

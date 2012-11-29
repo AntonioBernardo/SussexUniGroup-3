@@ -18,8 +18,10 @@ import android.util.Base64;
 
 public class LoginServiceFactory {
 
+
 //	private static final String DEFAULT_HOSTNAME = "10.0.2.2:4312";
 	private static final String DEFAULT_HOSTNAME = "176.34.83.168:5050";
+
 	
 	public LoginService create(LoginGrantedListener loginGrantedListener, Activity activity, Executor executor, Logger logger) throws MalformedURLException, URISyntaxException{
 		return create(DEFAULT_HOSTNAME, loginGrantedListener, activity, executor, logger, new AndroidBase64Encoder());

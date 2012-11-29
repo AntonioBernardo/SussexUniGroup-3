@@ -9,6 +9,7 @@ public class TransportLocation {
 	public static final String LATTITUDE_TAG = "lattitude";
 	public static final String LONGITUDE_TAG = "longitude";
 	public static final String TIMESTAMP_TAG = "timestamp";
+	public static final String ID_TAG = "id";
 	
 	@XmlElement(name=LATTITUDE_TAG, required=true)
 	private double lattitude;
@@ -19,12 +20,16 @@ public class TransportLocation {
 	@XmlElement(name=TIMESTAMP_TAG, required=true)
 	private long timestamp;
 	
+	@XmlElement(name=ID_TAG, required=false)
+	private int id;
+	
 	public TransportLocation(){
 		
-		this(0.0, 0.0, 0L);
+		this(1, 0.0, 0.0, 0L);
 	}
 	
-	public TransportLocation(double lattitude, double longitude, long timeStamp){
+	public TransportLocation(int id, double lattitude, double longitude, long timeStamp){
+		this.setId(id);
 		this.setLattitude(lattitude);
 		this.setLongitude(longitude);
 		this.setTimestamp(timeStamp);
@@ -52,6 +57,14 @@ public class TransportLocation {
 
 	public void setTimestamp(long timeStamp) {
 		this.timestamp = timeStamp;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	

@@ -2,8 +2,9 @@ package uk.ac.sussex.asegr3.tracker.server.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
+import uk.ac.sussex.asegr3.tracker.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
@@ -11,7 +12,7 @@ import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 public class LocationService {
 	
 	private static final double DEFAULT_PROXIMITY = 5;
-	private static final double DEFAULT_TIME_FRESHNESS = 5;
+	private static final int DEFAULT_LIMIT = 20;
 	
 	private final LocationDao dao;
 	private final CommentDao commentDao;
@@ -34,11 +35,10 @@ public class LocationService {
 	}
 
 	public void addComment(CommentDTO commentDTO) {
-		//dao.
+		commentDao.insert(commentDTO.getUsername(), commentDTO.getText(), commentDTO.getLocationID(), commentDTO.getImage(), System.currentTimeMillis());
 	}
 
-	public List<LocationDTO> getNearbyLocations(String username) {
-		// TODO fetch username current location
+	public Set<LocationDTO> getNearbyLocations(String username) {
 		
 		LocationDTO currentLocation = dao.getLatestLocationForUser(username);
 		
@@ -48,23 +48,8 @@ public class LocationService {
 		double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
 		double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
 		
-		return null;
-		
+	
+		return dao.getNearbyLocations(username, latMin, latMax, longMax, longMin, DEFAULT_LIMIT);
 	}
 	
-	public List<LocationDTO> getLocationsForSpecificUser(String username){
-		
-		List<LocationDTO> locationDetails=dao.getAllLocationsForUser(username);
-		
-		if(locationDetails==null){
-			locationDetails=new ArrayList<LocationDTO>();
-		}
-		
-		return locationDetails;
-	}
-
-
-	//--latmin = currentlat - proximity
-	//--latmax = currentLat + proximity
-
 }

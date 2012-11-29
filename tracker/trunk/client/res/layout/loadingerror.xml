@@ -38,12 +38,12 @@
 
 	    <TextView
 	        android:id="@+id/textView1"
-	        android:layout_width="match_parent"
+	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_below="@+id/imageView2"
-	        android:layout_marginTop="41dp"
-	        android:text="                      Permission denied! 
-	        You are not an authorised user"
+	        android:layout_centerHorizontal="true"
+	        android:layout_marginTop="46dp"
+	        android:text="ERROR.Please try again"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 	    <ImageView
@@ -51,9 +51,7 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignBottom="@+id/textView1"
-	        android:layout_marginBottom="24dp"
-	        android:layout_marginRight="30dp"
-	        android:layout_toLeftOf="@+id/imageView2"
+	        android:layout_toLeftOf="@+id/textView1"
 	        android:src="@android:drawable/ic_delete" />
 
 	</RelativeLayout>

@@ -74,6 +74,11 @@ public class LocationResource {
 		
 		locationService.getNearbyLocations(user.getUsername());
 		
+		//need to assign the return obj to variable (transportuserlocCole)
+		//list of locationDTO obj
+		//interate 
+		
+		
 		return null;
 	}
 }

@@ -59,7 +59,7 @@ public class TrackingActivity extends MapActivity implements MapViewProvider {
 			public void onClick(View view) {
 
 				Toast.makeText(getBaseContext(),
-						"Your current location is LAT:" + "LONG:",
+						"Saving current location at:"+"\n"+"LAT:"+"\n" + "LONG:",
 						Toast.LENGTH_LONG).show();
 			}
 		});

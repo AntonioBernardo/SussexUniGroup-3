@@ -6,6 +6,7 @@ public class LocationDTO {
 	private double latitude;
 	private double longitude;
 	private long timestamp;
+	//list of comments
 	
 	public LocationDTO(String username,double latitude, double longitude, long timeStamp){
 		this.setLatitude(latitude);

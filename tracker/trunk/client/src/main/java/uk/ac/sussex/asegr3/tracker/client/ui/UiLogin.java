@@ -39,7 +39,6 @@ public class UiLogin extends Activity implements LoginGrantedListener{
 	       
 				public void onClick(View view) {
 	    
-					AlertDialog.Builder builder = new AlertDialog.Builder(getBaseContext());
 					
 					loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
 	  

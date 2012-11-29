@@ -4,6 +4,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -13,8 +14,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import uk.ac.sussex.asegr3.tracker.security.LoggedInUser;
+import uk.ac.sussex.asegr3.tracker.server.dao.CommentDao;
 import uk.ac.sussex.asegr3.tracker.server.dao.LocationDao;
-import uk.ac.sussex.asegr3.comment.server.dao.CommentDao;
+import uk.ac.sussex.asegr3.tracker.server.domainmodel.CommentDTO;
 import uk.ac.sussex.asegr3.tracker.server.domainmodel.LocationDTO;
 import uk.ac.sussex.asegr3.tracker.server.services.LocationService;
 import uk.ac.sussex.asegr3.transport.beans.TransportLocation;
@@ -61,7 +63,7 @@ public class TrackerResourceUnitTest {
 		candidate.addLocations(loggedInUserMock, locBatch);
 		
 		List<LocationDTO> expectedLocations = new ArrayList<LocationDTO>(1);
-		expectedLocations.add(new LocationDTO(TEST_USERNAME, 0.0, 1.0, 1234567890));
+		expectedLocations.add(new LocationDTO(TEST_USERNAME, 0.0, 1.0, 1234567890, Collections.<CommentDTO>emptyList()));
 		
 		verify(trackerDaoMock, times(1)).insert(TEST_USERNAME, expectedLocations);
 	}

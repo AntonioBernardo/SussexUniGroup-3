@@ -1,5 +1,7 @@
 package uk.ac.sussex.asegr3.transport.beans;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +20,7 @@ public class TransportUserLocationUnitTest {
 	@Before
 	public void before(){
 		TransportLocation location = new TransportLocation(TEST_LAT, TEST_LONG, TEST_TIME);
-		candidate = new TransportUserLocation(TEST_USERNAME, location);
+		candidate = new TransportUserLocation(TEST_USERNAME, location, Collections.<TransportComment>emptyList());
 	}
 	
 	@Test

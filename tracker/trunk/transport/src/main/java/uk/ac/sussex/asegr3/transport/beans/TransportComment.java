@@ -9,9 +9,13 @@ public class TransportComment {
 	public static final String TEXT_TAG = "text";
 	public static final String LOCATION_ID_TAG = "locationId";
 	public static final String IMAGE_TAG = "image";
+	public static final String TIMESTAMP_TAG = "timestamp";
 	
 	@XmlElement(name=TEXT_TAG, required=true)
 	private String text;
+	
+	@XmlElement(name=TEXT_TAG, required=true)
+	private String poster;
 	
 	@XmlElement(name=LOCATION_ID_TAG, required=true)
 	private int location_id;
@@ -19,12 +23,16 @@ public class TransportComment {
 	@XmlElement(name=IMAGE_TAG, required=false)
 	private byte[] image;
 	
+	@XmlElement(name=TIMESTAMP_TAG, required=true)
+	private long timestamp;
+	
 	public TransportComment(){
 		
-		this("", 1, new byte[]{});
+		this("", "", 1, new byte[]{}, 1);
 	
 	}
-	public TransportComment(String text, int location_id, byte[] b){
+	public TransportComment(String poster, String text, int location_id, byte[] b, long timestamp){
+		this.setPoster(poster);
 		this.setText(text);
 		this.setLocation_ID(location_id);
 		this.setImage(b);
@@ -52,5 +60,17 @@ public class TransportComment {
 
 	public void setImage(byte[] image) {
 		this.image = image;
+	}
+	public long getTimestamp() {
+		return timestamp;
+	}
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
+	public String getPoster() {
+		return poster;
+	}
+	public void setPoster(String poster) {
+		this.poster = poster;
 	}
 }

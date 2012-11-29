@@ -1,5 +1,7 @@
 package uk.ac.sussex.asegr3.tracker.server.domainmodel;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -16,7 +18,7 @@ public class LocationDTOUnitTest {
 	
 	@Before
 	public void before(){
-		candidate=new LocationDTO(TEST_USERNAME, TEST_LAT, TEST_LONG, TEST_TIMESTAMP);
+		candidate=new LocationDTO(TEST_USERNAME, TEST_LAT, TEST_LONG, TEST_TIMESTAMP, Collections.<CommentDTO>emptyList());
 	}
 	
 	@Test

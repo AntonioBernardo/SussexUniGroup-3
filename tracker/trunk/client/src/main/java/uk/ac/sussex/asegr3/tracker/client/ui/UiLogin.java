@@ -7,9 +7,12 @@ import uk.ac.sussex.asegr3.tracker.client.service.login.LoginGrantedListener;
 import uk.ac.sussex.asegr3.tracker.client.service.login.LoginService;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,25 +25,28 @@ public class UiLogin extends Activity implements LoginGrantedListener{
 	// Initializing variables
 		private EditText inputName;
 		private EditText inputPassword;
+		
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        
-        final ProgressBar progress = (ProgressBar)findViewById(R.id.progressBar1);
         
         
 		try {
 			final LoginService loginService = new LoginServiceFactory().create(this, this, AsyncTask.SERIAL_EXECUTOR, AndroidLogger.INSTANCE);
 			Button next = (Button) findViewById(R.id.button1);      
 			next.setOnClickListener(new View.OnClickListener() {
-	            public void onClick(View view) {
-	                loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
-	                
-	              //  progress.setVisibility(ProgressBar.VISIBLE);
+	       
+				public void onClick(View view) {
+	    
+					AlertDialog.Builder builder = new AlertDialog.Builder(getBaseContext());
+					
+					loginService.login(inputName.getText().toString(), inputPassword.getText().toString());
+	  
 	                Toast.makeText(getBaseContext(),
 							"Loading.....",
 							Toast.LENGTH_SHORT).show();
+	                
 	            }
 
 	        });

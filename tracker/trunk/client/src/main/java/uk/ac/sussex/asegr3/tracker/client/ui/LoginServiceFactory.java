@@ -18,7 +18,7 @@ import android.util.Base64;
 
 public class LoginServiceFactory {
 
-	private static final String DEFAULT_HOSTNAME = "10.0.2.2:4312";
+	private static final String DEFAULT_HOSTNAME = "ec2-54-247-19-238.eu-west-1.compute.amazonaws.com:5050";
 
 	
 	public LoginService create(LoginGrantedListener loginGrantedListener, Activity activity, Executor executor, Logger logger) throws MalformedURLException, URISyntaxException{

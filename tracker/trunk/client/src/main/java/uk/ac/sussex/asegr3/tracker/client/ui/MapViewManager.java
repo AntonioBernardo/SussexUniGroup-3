@@ -51,7 +51,7 @@ public void addCommentsToMap(List<Comment> comments){
 	public void addCurrentPositionsToMap(List<PersonPosition> positions){
 		
 		if(positions!=null && !positions.isEmpty()){
-			Drawable currentPositionIcon=context.getResources().getDrawable(R.drawable.current_position_icon);
+			Drawable currentPositionIcon=context.getResources().getDrawable(R.drawable.friendly_position_icon);
 			
 			if(currentPositionOverlay==null)
 				currentPositionOverlay=new CurrentPositionItemizedOverlay(currentPositionIcon, context);  
@@ -68,19 +68,19 @@ public void addCommentsToMap(List<Comment> comments){
 	public void addSomePointsToMap(List<LocationDto> locations){
 		
 		if(locations!=null && !locations.isEmpty()){
-			Drawable currentPositionIcon=context.getResources().getDrawable(R.drawable.current_position_icon);
+			Drawable positionIcon=context.getResources().getDrawable(R.drawable.current_position_icon);
 		
-			if(currentPositionOverlay==null)
-				currentPositionOverlay=new CurrentPositionItemizedOverlay(currentPositionIcon, context);  
+			if(positionsOverlay==null)
+				positionsOverlay=new PositionsItemizedOverlay(positionIcon, context);  
 	        
 	        for(LocationDto position : locations){
 	        	GeoPoint geoPoint=new GeoPoint((int)(position.getLat()*1E6), (int)(position.getLng()*1E6));
 	        	OverlayItem item=new OverlayItem(geoPoint, new String(""+position.getTimestamp()), new String("Random"));
 //	        	OverlayItem item=new OverlayItem(position.getGeoPoint(), position.getUserName(), "Random");
-	    		currentPositionOverlay.addOverlay(item);
+	    		positionsOverlay.addOverlay(item);
 	        }
 	        
-	        mapView.getOverlays().add(currentPositionOverlay);
+	        mapView.getOverlays().add(positionsOverlay);
 			
 		}
 		
@@ -121,7 +121,8 @@ public void addCommentsToMap(List<Comment> comments){
 	}
 	
 	public void removeCurrentPositions(){
-		currentPositionOverlay=null;
+		if(currentPositionOverlay!=null)
+			currentPositionOverlay=null;
 	}
 	
 	public void removePersonPositions(){

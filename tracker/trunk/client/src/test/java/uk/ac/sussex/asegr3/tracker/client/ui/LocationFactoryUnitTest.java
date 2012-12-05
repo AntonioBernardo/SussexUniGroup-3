@@ -46,6 +46,9 @@ public class LocationFactoryUnitTest {
 	
 	@Mock
 	private FetchLocationCallBack fetchLocationCallBackMock;
+	
+	@Mock
+	private MapViewManager mapViewManagerMock;
 
 	
 	@Before
@@ -57,7 +60,7 @@ public class LocationFactoryUnitTest {
 	@Test
 	public void givenLocationFactory_whenCallingCreate_newLocationFactoryReturned(){
 		LocationService returnedService = candidate.create(activityMock, apiMock, mapViewProviderMock, loggerMock, executorMock,
-				fetchLocationCallBackMock);
+				fetchLocationCallBackMock, mapViewManagerMock);
 		
 		assertThat(returnedService, is(not(nullValue())));
 	}

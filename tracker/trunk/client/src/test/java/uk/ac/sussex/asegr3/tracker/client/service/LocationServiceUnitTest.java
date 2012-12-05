@@ -66,7 +66,7 @@ public class LocationServiceUnitTest {
 	@Before
 	public void before(){
 		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE, loggerMock, apiMock,
-				executorMock, fetchLocationCallBackMock);
+				executorMock, fetchLocationCallBackMock, 3);
 		candidate.registerListener(locationUpdateListenerMock);
 		when(locationManagerMock.isProviderEnabled(LocationManager.GPS_PROVIDER)).thenReturn(true);
 		when(locationManagerMock.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).thenReturn(true);

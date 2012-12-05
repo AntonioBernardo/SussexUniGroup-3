@@ -26,9 +26,11 @@ public class LocationService implements LocationListener {
 	private Location lastLocation = null;
 	private final HttpTransportClientApi transportApi;
 	private final Executor executor;
+	private final float requiredAccurancy;
 
 	public LocationService(LocationManager locationManager, int proximityDistance, Logger logger, 
-			HttpTransportClientApi transportApi, Executor executor, FetchLocationCallBack fetchLocationCallBack) {
+			HttpTransportClientApi transportApi, Executor executor, FetchLocationCallBack fetchLocationCallBack,
+			float requiredAccurancy) {
 		this.listeners = new LinkedList<LocationUpdateListener>();
 		this.locationManager = locationManager;
 		this.proximityDistance = proximityDistance;
@@ -36,9 +38,42 @@ public class LocationService implements LocationListener {
 		this.transportApi=transportApi;
 		this.executor=executor;
 		this.fetchLocationCallBack=fetchLocationCallBack;
+		this.requiredAccurancy = requiredAccurancy;
 		
 	}
 
+	public void forceUpdateLocation(){
+		System.out.println("requesting single location. Status is: "+locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
+		locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER,new LocationListener(){
+
+			@Override
+			public void onLocationChanged(Location location) {
+				System.out.println("recieved location: "+location.getLatitude()+", "+location.getLongitude());
+				notifyListeners(new LocationDto(transportApi.getLoggedInUser(), location.getLatitude(),
+						location.getLongitude(), location.getTime(), Collections.<CommentDto>emptyList()));
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		} ,null);
+	}
 	
 	public void start() {
 		// register this with location manager providers
@@ -72,22 +107,23 @@ public class LocationService implements LocationListener {
 		// possible implementation would be to discard negative coordinates??
 
 		if (location != null) {
-
-			logger.debug(LocationService.class, "Recieved location update: "+location.toString());
-			// this if will check if last and current location are close to each other by 100 meters
-			//or use the eclideoum equation
-			if (lastKnownLocation != null){
-				if (lastKnownLocation.distanceTo(location) > proximityDistance) {
-
-					locationValid = true;
-				} else {
-					logger.debug(LocationService.class, "this location has not moved enough from last know location ("+lastKnownLocation+"). Ignoring location");
+			if (location.getAccuracy() < requiredAccurancy){
+				logger.debug(LocationService.class, "Recieved location update: "+location.toString());
+				// this if will check if last and current location are close to each other by 100 meters
+				//or use the eclideoum equation
+				if (lastKnownLocation != null){
+					if (lastKnownLocation.distanceTo(location) > proximityDistance) {
+	
+						locationValid = true;
+					} else {
+						logger.debug(LocationService.class, "this location has not moved enough from last know location ("+lastKnownLocation+"). Ignoring location");
+					}
+				} else{
+					locationValid = true; // we dont have a last location so this must be valid.
 				}
-			} else{
-				locationValid = true; // we dont have a last location so this must be valid.
+				
+				this.lastLocation = location;
 			}
-			
-			this.lastLocation = location;
 		}
 
 		if (locationValid) {

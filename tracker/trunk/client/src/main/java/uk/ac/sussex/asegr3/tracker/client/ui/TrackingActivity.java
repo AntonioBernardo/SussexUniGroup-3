@@ -7,6 +7,7 @@ import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
 import android.content.Intent;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -51,10 +52,12 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 		// TextView txtName = (TextView) findViewById(R.id.TextViewDisplay1);
 		// TextView txtEmail = (TextView) findViewById(R.id.TextViewDisplay2);
 		Intent i = getIntent();
+		
+		this.mapViewManager=new MapViewManager(getMap(), this);
 
-		LocationService locService=new LocationServiceFactory().create(
+		final LocationService locService=new LocationServiceFactory().create(
 				this, api, this, AndroidLogger.INSTANCE,
-				AsyncTask.SERIAL_EXECUTOR, this);
+				AsyncTask.SERIAL_EXECUTOR, this, mapViewManager);
 		
 		
 		
@@ -63,14 +66,12 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 
 		next.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
+				
+				locService.forceUpdateLocation();
 
-				Toast.makeText(getBaseContext(),
-						"Saving current location at:"+"\n"+"LAT:"+"\n" + "LONG:",
-						Toast.LENGTH_LONG).show();
+				
 			}
 		});
-		
-		this.mapViewManager=new MapViewManager(getMap(), this);
 		
 		locService.getNearbyLocations();
 	}

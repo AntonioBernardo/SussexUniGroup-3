@@ -14,7 +14,9 @@ public class TransportErrorResponse {
 	public static enum ErrorCode {
 		INVALID_API_REQUEST,
 		INVALID_CREDENTIALS, 
-		USER_ALREADY_EXISTS
+		USER_ALREADY_EXISTS, 
+		NOT_PERMISSIONED, 
+		UNKNOWN_ERROR
 	}
 
 	public static final String ERROR_CODE = "errorCode";

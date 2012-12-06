@@ -41,13 +41,16 @@ public class LocationService {
 	public Set<LocationDTO> getNearbyLocations(String username) {
 		
 		LocationDTO currentLocation = dao.getLatestLocationForUser(username);
+		if (currentLocation != null){
+			double latMin = currentLocation.getLatitude() - DEFAULT_PROXIMITY;
+			double latMax = currentLocation.getLatitude() + DEFAULT_PROXIMITY;
+			
+			double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
+			double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
 		
-		double latMin = currentLocation.getLatitude() - DEFAULT_PROXIMITY;
-		double latMax = currentLocation.getLatitude() + DEFAULT_PROXIMITY;
-		
-		double longMin = currentLocation.getLongitude() - DEFAULT_PROXIMITY;
-		double longMax = currentLocation.getLongitude() + DEFAULT_PROXIMITY;
-	
-		return dao.getNearbyLocations(username, latMin, latMax, longMin, longMax, DEFAULT_LIMIT);
+			return dao.getNearbyLocations(username, latMin, latMax, longMin, longMax, DEFAULT_LIMIT);
+		} else{
+			return Collections.emptySet();
+		}
 	}
 }

@@ -71,6 +71,14 @@ public class LocationDto implements Comparable<LocationDto>{
 	public int compareTo(LocationDto another) {
 		return (int)(this.getTimestamp() - another.getTimestamp());
 	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public Collection<CommentDto> getComments() {
+		return comments;
+	}
 	
 	
 }

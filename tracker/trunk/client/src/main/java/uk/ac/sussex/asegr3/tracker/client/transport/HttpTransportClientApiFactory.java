@@ -7,6 +7,7 @@ import java.util.List;
 
 import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.dto.UserProfileDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -35,11 +36,11 @@ public class HttpTransportClientApiFactory implements Serializable{
 		return CURRENT_API;
 	}
 	
-	public HttpTransportClientApi createFromNewUser(String username, String password) throws NewUserSignupException{
+	public HttpTransportClientApi createFromNewUser(UserProfileDto profile, String password) throws NewUserSignupException{
 
-		final String token = client.signupUser(username, password);
+		final String token = client.signupUser(profile, password);
 		
-		CURRENT_API =  new TokenBasedHttpTransportClientApi(username, client, token);
+		CURRENT_API =  new TokenBasedHttpTransportClientApi(profile.getEmail(), client, token);
 			
 		return CURRENT_API;
 	}

@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
 import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.dto.UserProfileDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
@@ -41,6 +43,7 @@ import uk.ac.sussex.asegr3.transport.beans.TransportLocationBatch;
 import uk.ac.sussex.asegr3.transport.beans.TransportNewUserRequest;
 import uk.ac.sussex.asegr3.transport.beans.TransportUserLocation;
 import uk.ac.sussex.asegr3.transport.beans.TransportUserLocationCollection;
+import uk.ac.sussex.asegr3.transport.beans.AbstractTransportUserRequest.Gender;
 
 class HttpTransportClient implements Serializable{
 
@@ -79,7 +82,7 @@ class HttpTransportClient implements Serializable{
 		byte[] authenticationPayload = getJsonPayloadForAuthenicationRequest(password);
 		
 		try{
-			Response response = postJsonData(authenticationPayload, new URL(authenticateRequestUri+username+"/authenticate"));
+			Response response = postJsonData(authenticationPayload, new URL(authenticateRequestUri+URLEncoder.encode(username, "utf-8")+"/authenticate"));
 			if (isResponseOk(response)){
 				return extractTokenFromResponse(response);
 			} else{
@@ -90,7 +93,7 @@ class HttpTransportClient implements Serializable{
 		}
 	}
 	
-	private String extractTokenFromResponse(Response response){
+	private String extractTokenFromResponse(Response response) {
 		
 		System.out.println(new String(response.getContent()));
 		TransportAuthenticationToken token = getTransportAuthenticationToken(response.getContent());
@@ -101,12 +104,12 @@ class HttpTransportClient implements Serializable{
 		return tokenStr;
 	}
 	
-	public String signupUser(String username, String password) throws NewUserSignupException{
+	public String signupUser(UserProfileDto profile, String password) throws NewUserSignupException{
 		// create transport object via getJsonPayloadForAuthenicationRequest
-		byte[] newUserPayload = getJsonPayloadForNewUserRequest(username, password);
+		byte[] newUserPayload = getJsonPayloadForNewUserRequest(profile, password);
 		
 		try{
-			Response response = postJsonData(newUserPayload, new URL(addNewUserUri+username));
+			Response response = postJsonData(newUserPayload, new URL(addNewUserUri+URLEncoder.encode(profile.getEmail(), "utf-8")));
 			if (!isResponseOk(response)){
 				throw new NewUserSignupException(getErrorMessage(response));
 			} else{
@@ -114,7 +117,7 @@ class HttpTransportClient implements Serializable{
 			}
 		} catch (IOException e){
 			throw new NewUserSignupException("Unable to communicate with server", e);
-		}
+		} 
 	}
 	
 	private String getErrorMessage(Response response) {
@@ -140,11 +143,18 @@ class HttpTransportClient implements Serializable{
 		}
 	}
 
-	private byte[] getJsonPayloadForNewUserRequest(String username, String password) {
+	private byte[] getJsonPayloadForNewUserRequest(UserProfileDto profile, String password) {
 		JSONObject jsonObject = new JSONObject();
 		try{
-			jsonObject.put(TransportNewUserRequest.USERNAME_TAG, username);
+			jsonObject.put(TransportNewUserRequest.EMAIL_TAG, profile.getEmail());
 			jsonObject.put(TransportNewUserRequest.PASSWORD_TAG, password);
+			jsonObject.put(TransportNewUserRequest.NAME_TAG, profile.getName());
+			jsonObject.put(TransportNewUserRequest.SURNAME_TAG, profile.getSurname());
+			jsonObject.put(TransportNewUserRequest.AGE_TAG, profile.getAge());
+			jsonObject.put(TransportNewUserRequest.GENDER_TAG, (profile.getGender() == UserProfileDto.GENDER_MALE)? Gender.FEMALE: Gender.MALE);
+			jsonObject.put(TransportNewUserRequest.ABOUT_YOU_TAG, profile.getAbout());
+			jsonObject.put(TransportNewUserRequest.INTERESTS_TAG, profile.getInterests());
+
 			return jsonObject.toString().getBytes(Charset.forName("UTF-8"));
 		} catch (JSONException e){
 			throw new RuntimeException("Unable to create the new user request", e);
@@ -234,14 +244,15 @@ class HttpTransportClient implements Serializable{
 		    
 		    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		    byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-		    
-		    while(in.read(buffer) != -1){
-		    	baos.write(buffer);
+		    try{
+			    while(in.read(buffer) != -1){
+			    	baos.write(buffer);
+			    }
+			    content = baos.toByteArray();
+			    return new Response(connection.getResponseCode(), content);
+		    } catch (IOException e){
+		    	return new Response(connection.getResponseCode(), e.getMessage().getBytes());
 		    }
-		    content = baos.toByteArray();
-		    
-		    return new Response(connection.getResponseCode(), content);
-			
 		}
 	
 	public List<LocationDto> retrieveLocationData(String token){
@@ -415,10 +426,12 @@ class HttpTransportClient implements Serializable{
 		 CookieHandler.setDefault(cookieManager);
 		 
 		 HttpCookie cookie = new HttpCookie(TransportAuthenticationToken.AUTHENTICATION_SIGNATURE_COOKIE_NAME, token);
-		 cookie.setDomain(hostname.split(":")[0]);
+		 String domain = hostname.split(":")[0];
+		 
+		 cookie.setDomain(domain);
 		 cookie.setPath("/");
 		 cookie.setVersion(0);
-		 cookieManager.getCookieStore().add(null, cookie);
+		 cookieManager.getCookieStore().add(uri, cookie);
 	}
 	
 	private TransportAuthenticationToken getTransportAuthenticationToken(byte[] token){

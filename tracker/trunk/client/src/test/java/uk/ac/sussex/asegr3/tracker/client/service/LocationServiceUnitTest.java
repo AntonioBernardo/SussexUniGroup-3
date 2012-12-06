@@ -37,7 +37,7 @@ public class LocationServiceUnitTest {
 
 	private static final long TEST_LOCATION_TIME = 56445674;
 
-	private static final Float GOOD_ACCURACY = 10f;
+	private static final Float GOOD_ACCURACY = 3f;
 
 	private static final int TEST_PROXIMITY_DISTANCE = 10;
 
@@ -66,7 +66,7 @@ public class LocationServiceUnitTest {
 	@Before
 	public void before(){
 		candidate = new LocationService(locationManagerMock, TEST_PROXIMITY_DISTANCE, loggerMock, apiMock,
-				executorMock, fetchLocationCallBackMock, 3);
+				executorMock, fetchLocationCallBackMock, 5);
 		candidate.registerListener(locationUpdateListenerMock);
 		when(locationManagerMock.isProviderEnabled(LocationManager.GPS_PROVIDER)).thenReturn(true);
 		when(locationManagerMock.isProviderEnabled(LocationManager.NETWORK_PROVIDER)).thenReturn(true);

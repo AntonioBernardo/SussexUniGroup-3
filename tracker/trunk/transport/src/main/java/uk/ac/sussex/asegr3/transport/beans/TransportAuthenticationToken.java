@@ -83,7 +83,7 @@ public class TransportAuthenticationToken {
 		String[] tokens = token.split("_");
 		
 		if (tokens.length != 3){
-			throw new IllegalArgumentException("Token does not have the correct structure.");
+			throw new IllegalArgumentException("Token does not have the correct structure.("+token+")");
 		}
 		
 		String username = new String(Base64.decodeBase64(tokens[0]), Charset.forName("UTF-8"));

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.sussex.asegr3.tracker.client.dto.CommentDto;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.dto.UserProfileDto;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.service.NewUserCallback;
@@ -43,7 +44,7 @@ public class TrackerIntegrationTest {
 
 	private static TrackerService candidate;
 	private static Server server;
-	private static final String TEST_USER_NAME = "testing_user1";
+	private static final String TEST_USER_NAME = "testing_user1@test.com";
 	private static final String TEST_PASSWORD = "testing_pass";
 	private static final uk.ac.sussex.asegr3.tracker.client.util.Logger CLIENT_LOGGER = new SLF4JLogger();
 	private static final NetworkInfoProvider ALWAYS_ON_NETWORK_PROVIDER = new MockedNetworkInfoProvider();
@@ -70,8 +71,14 @@ public class TrackerIntegrationTest {
 		
 	};
 	private static final String LOCAL_ADDRESS = "localhost:4312";
-	private static final String TEST_NEW_USERNAME = "newTestUser";
+	private static final String TEST_NEW_USERNAME = "newTestUser@testing.com";
 	private static final String TEST_NEW_USER_PASSWORD = "newTestUserPassword";
+	private static final String TEST_NAME = "name";
+	private static final String TEST_SURNAME = "surname";
+	private static final int TEST_AGE = 21;
+	private static final int TEST_GENDER = UserProfileDto.GENDER_MALE;
+	private static final String TEST_ABOUT = "TestAbout";
+	private static final String TEST_INTERESTS = "testInterest";
 	
 	
 	@BeforeClass
@@ -126,7 +133,7 @@ public class TrackerIntegrationTest {
 			public void processFetchFailed(Exception e) {
 				fail("error from request: "+ e.getMessage());
 			}
-		});
+		}, 3);
 		locationService.getNearbyLocations();
 		
 		assertThat(processedFecthedLocations.get(), is(equalTo(true)));
@@ -153,7 +160,7 @@ public class TrackerIntegrationTest {
 			}
 		});
 		
-		newUserService.signUp(TEST_NEW_USERNAME, TEST_NEW_USER_PASSWORD, TEST_NEW_USER_PASSWORD);
+		newUserService.signUp(TEST_NEW_USERNAME, TEST_NEW_USER_PASSWORD, TEST_NEW_USER_PASSWORD, TEST_NAME, TEST_SURNAME, TEST_AGE, TEST_GENDER, TEST_ABOUT, TEST_INTERESTS);
 		
 		assertThat(processedUser.get(), is(equalTo(true)));
 		

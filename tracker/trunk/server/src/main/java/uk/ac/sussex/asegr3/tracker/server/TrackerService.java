@@ -54,7 +54,7 @@ public class TrackerService extends Service<TrackerConfiguration>{
 		//services 
 		
 		AuthenticationService authService = createAuthenticationService(userDao, configuration, clock);
-		UserService userService = new UserService(userDao, authService);
+		UserService userService = new UserService(userDao, authService, clock);
 		
 		// health checks
 		addHealthCheck(environment, new DatabaseHealthCheck(database));

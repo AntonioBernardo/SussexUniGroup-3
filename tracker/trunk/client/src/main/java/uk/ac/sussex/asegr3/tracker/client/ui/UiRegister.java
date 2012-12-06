@@ -2,8 +2,8 @@ package uk.ac.sussex.asegr3.tracker.client.ui;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executor;
 
+import uk.ac.sussex.asegr3.tracker.client.dto.UserProfileDto;
 import uk.ac.sussex.asegr3.tracker.client.service.NewUserCallback;
 import uk.ac.sussex.asegr3.tracker.client.service.NewUserService;
 import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
@@ -59,7 +59,7 @@ public class UiRegister extends Activity implements NewUserCallback{
                 
             	
             	
-				userService.signUp(inputName.getText().toString(), inputPass.getText().toString(), inputPass2.getText().toString());
+				userService.signUp(inputName.getText().toString(), inputPass.getText().toString(), inputPass2.getText().toString(), "", "", 12, UserProfileDto.GENDER_MALE, "", "");
 				
 			//  progress.setVisibility(ProgressBar.VISIBLE);
                 Toast.makeText(getBaseContext(),

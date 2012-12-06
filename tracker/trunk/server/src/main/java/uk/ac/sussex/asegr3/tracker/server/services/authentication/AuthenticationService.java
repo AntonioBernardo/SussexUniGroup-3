@@ -47,6 +47,7 @@ public class AuthenticationService {
 			long expirationTime = currentClock.getCurrentTime()+timeToExpire;
 			try {
 				String signature = calculateSignature(buildCompositeDataForSignature(username, expirationTime));
+				userDao.updateLastLoggin(username, System.currentTimeMillis());
 				return new AuthenticationToken(username, expirationTime, signature);
 			} catch (SignatureException e) {
 				throw new SecurityViolationException(Type.SIGNATURE_GENERATION, e);

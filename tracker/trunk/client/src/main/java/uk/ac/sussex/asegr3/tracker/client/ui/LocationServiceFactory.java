@@ -6,16 +6,12 @@ import java.util.concurrent.TimeUnit;
 import android.app.Activity;
 import android.content.Context;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import uk.ac.sussex.asegr3.tracker.client.location.BatchLocationConsumer;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationBatch;
 import uk.ac.sussex.asegr3.tracker.client.location.LocationCache;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
-import uk.ac.sussex.asegr3.tracker.client.sytem.NetworkInfoProvider;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
-import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
 import uk.ac.sussex.asegr3.tracker.client.util.Logger;
 
 public class LocationServiceFactory {

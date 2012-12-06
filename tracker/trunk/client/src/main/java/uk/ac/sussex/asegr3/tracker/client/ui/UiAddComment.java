@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-public class UiLoading extends Activity {
+public class UiAddComment extends Activity {
 
 	
     @Override
@@ -16,7 +16,7 @@ public class UiLoading extends Activity {
         
            	super.onCreate(icicle);
    
-    	setContentView(R.layout.loading);
+    	setContentView(R.layout.commentdialog);
         
         
 

@@ -5,28 +5,37 @@ import java.util.List;
 import uk.ac.sussex.asegr3.tracker.client.dataobject.Comment;
 import uk.ac.sussex.asegr3.tracker.client.dataobject.PersonPosition;
 import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
+import uk.ac.sussex.asegr3.tracker.client.ui.overlays.AddCommentCallback;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.CommentItemizedOverlay;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.CurrentPositionItemizedOverlay;
 import uk.ac.sussex.asegr3.tracker.client.ui.overlays.PositionsItemizedOverlay;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
-public class MapViewManager {
+public class MapViewManager  {
 	
 	private MapView mapView;
 	private Context context;
+	//private Context myContext=this;
+	private final AddCommentCallback callback;
 	
 	private PositionsItemizedOverlay positionsOverlay;
-	private CurrentPositionItemizedOverlay currentPositionOverlay;
+	private  CurrentPositionItemizedOverlay currentPositionOverlay;
 	private CommentItemizedOverlay commentOverlay;
 	
-	public MapViewManager(MapView mapView, Context context){
+	public MapViewManager(MapView mapView, Context context, AddCommentCallback callback){
 		this.mapView=mapView;
 		this.context=context;
+		this.callback=callback;
+		
 		
 	}
 	
@@ -54,7 +63,7 @@ public void addCommentsToMap(List<Comment> comments){
 			Drawable currentPositionIcon=context.getResources().getDrawable(R.drawable.friendly_position_icon);
 			
 			if(currentPositionOverlay==null)
-				currentPositionOverlay=new CurrentPositionItemizedOverlay(currentPositionIcon, context);  
+				currentPositionOverlay=new CurrentPositionItemizedOverlay(currentPositionIcon, context, callback);  
 	        
 	        for(PersonPosition position : positions){
 	        	OverlayItem item=new OverlayItem(position.getGeoPoint(), position.getUserName(), "Random");
@@ -71,7 +80,7 @@ public void addCommentsToMap(List<Comment> comments){
 			Drawable positionIcon=context.getResources().getDrawable(R.drawable.current_position_icon);
 		
 			if(positionsOverlay==null)
-				positionsOverlay=new PositionsItemizedOverlay(positionIcon, context);  
+				positionsOverlay=new PositionsItemizedOverlay(positionIcon, context, callback);  
 	        
 	        for(LocationDto position : locations){
 	        	GeoPoint geoPoint=new GeoPoint((int)(position.getLat()*1E6), (int)(position.getLng()*1E6));
@@ -92,7 +101,7 @@ public void addCommentsToMap(List<Comment> comments){
 			Drawable standardPositionIcon=context.getResources().getDrawable(R.drawable.friendly_position_icon);
 			
 			if(positionsOverlay==null)
-				positionsOverlay=new PositionsItemizedOverlay(standardPositionIcon, context);
+				positionsOverlay=new PositionsItemizedOverlay(standardPositionIcon, context, callback);
 	        
 	        for(PersonPosition position : positions){
 	        	
@@ -128,5 +137,7 @@ public void addCommentsToMap(List<Comment> comments){
 	public void removePersonPositions(){
 		positionsOverlay=null;
 	}
+
+		
 
 }

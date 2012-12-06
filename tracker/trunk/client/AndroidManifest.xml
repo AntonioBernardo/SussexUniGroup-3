@@ -36,6 +36,10 @@
         <activity android:name=".UiRegister"></activity>
         <activity android:name=".UiLoading"></activity>
         <activity android:name=".UiError"></activity>
+        <activity android:name=".UiViewUsers"></activity>
+        <activity android:name=".UiViewComment"></activity>
+        <activity android:name=".UiAddComment"></activity>
+        
         <activity
             android:name="uk.ac.sussex.asegr3.tracker.client.ui.TakePictureActivity"
             android:label="@string/title_activity_take_picture"

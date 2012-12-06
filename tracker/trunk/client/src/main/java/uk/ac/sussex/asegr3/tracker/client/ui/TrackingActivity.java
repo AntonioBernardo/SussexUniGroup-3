@@ -6,6 +6,7 @@ import uk.ac.sussex.asegr3.tracker.client.dto.LocationDto;
 import uk.ac.sussex.asegr3.tracker.client.service.LocationService;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApi;
 import uk.ac.sussex.asegr3.tracker.client.transport.HttpTransportClientApiFactory;
+import uk.ac.sussex.asegr3.tracker.client.ui.overlays.AddCommentCallback;
 import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -18,7 +19,7 @@ import android.widget.Toast;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 
-public class TrackingActivity extends MapActivity implements MapViewProvider, FetchLocationCallBack {
+public class TrackingActivity extends MapActivity implements MapViewProvider, FetchLocationCallBack, AddCommentCallback {
 
 
 	private static final int PERMISSION_GRANTED = 1;
@@ -53,7 +54,7 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 		// TextView txtEmail = (TextView) findViewById(R.id.TextViewDisplay2);
 		Intent i = getIntent();
 		
-		this.mapViewManager=new MapViewManager(getMap(), this);
+		this.mapViewManager=new MapViewManager(getMap(), this, this);
 
 		final LocationService locService=new LocationServiceFactory().create(
 				this, api, this, AndroidLogger.INSTANCE,
@@ -74,6 +75,31 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 		});
 		
 		locService.getNearbyLocations();
+		
+		Button exit = (Button) findViewById(R.id.button2);
+
+		exit.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {
+				
+				finish();
+
+				
+			}
+		});
+		
+		
+		Button comment = (Button) findViewById(R.id.button1);
+
+		comment.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {
+				
+				Intent myIntent = new Intent(getBaseContext(), UiAddComment.class);
+		         startActivity(myIntent);
+
+				
+			}
+		});
+		
 	}
 	
 	@Override
@@ -104,6 +130,30 @@ public class TrackingActivity extends MapActivity implements MapViewProvider, Fe
 	public void processFetchFailed(Exception e) {
 		throw new RuntimeException(e);
 		
+	}
+
+	@Override
+	public void addComment() {
+		
+		 Intent myIntent = new Intent(getBaseContext(), UiViewComment.class);
+         this.startActivity(myIntent);
+	}
+
+	@Override
+	public void viewComments() {
+		// TODO Auto-generated method stub
+		
+         
+         Intent myIntent = new Intent(getBaseContext(), UiAddComment.class);
+         this.startActivity(myIntent);
+		
+	}
+
+	@Override
+	public void viewUsers() {
+		
+		 Intent myIntent = new Intent(getBaseContext(), UiViewUsers.class);
+         this.startActivity(myIntent);
 	}
 	
 	
